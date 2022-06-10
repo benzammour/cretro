@@ -50,3 +50,12 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# binaries
+ch8
+.vscode/
+roms/
+*.rom
+*.ch8
+*.c8
+*.code-workspace
