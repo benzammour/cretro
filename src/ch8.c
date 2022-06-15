@@ -1,24 +1,23 @@
 #include <stdio.h>
-#include "ch8.h"
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <sys/mman.h>
 #include <string.h>
-
-#define START_ADDRESS 0x200
-
-struct CPU {
-	uint8_t REG;
-
-	uint16_t index;
-	uint16_t SP;
-	uint16_t PC;
-	uint16_t cycle_count;
-	uint16_t opcode;
-};
+#include "ch8.h"
 
 struct CPU c;
+
 uint8_t rom_buffer[4096];
+
+op_function table[0xF + 1] = { NOOP };
+
+
+void NOOP() {
+}
+
+
+void DEBUG() {
+	printf("debug");
+}
 
 
 /* ------------------ ROM Funcs */
@@ -56,12 +55,23 @@ uint8_t rom_load(const char *filename) {
 	}
 
 	free(tmp_buf);
-	
+
     return 0;
 }
 
+
 /* ------------------ CPU Funcs */
-void cpu_init(void) {
-	c.SP = 0x0;
-	c.PC = 0x0;
+void cpu_init() {
+	c.PC = START_ADDRESS;
+
+	// Set up lookup table
+	table[0x0] = DEBUG;
 }
+
+uint8_t cpu_step() {
+	table[0x0]();
+
+	return 0;
+}
+
+

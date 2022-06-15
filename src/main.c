@@ -24,9 +24,14 @@ int main(int argc, char** argv) {
 	}
 	printf("Successfully initialized LCD\n");
 
+	cpu_init();
 
 	uint8_t x = 0;
 	while(1) {
+		if (cpu_step()) {
+			break;
+		}
+
 		if (lcd_step()) {
 			break;
 		}
