@@ -13,7 +13,7 @@ uint16_t cpu_get_cycle_count();
 uint8_t cpu_step(void);
 
 // Do nothing
-void NOOP();
+void ILLEGAL_OPCODE();
 
 struct CPU {
 	uint8_t REG;
