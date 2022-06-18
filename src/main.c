@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
 	}
 	printf("Successfully initialized LCD\n");
 
-	cpu_init();
+	machine_init();
 
 	uint8_t x = 0;
 	while(1) {
