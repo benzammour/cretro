@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+
 #include "lcd.h"
 
 static SDL_Window *window;
@@ -147,6 +148,7 @@ uint8_t lcd_process_input() {
 
 uint8_t lcd_step(void const *buffer, int pitch) {
 	SDL_UpdateTexture(texture, NULL, buffer, pitch);
+	SDL_SetTextureColorMod(texture, 69, 170, 242);
 	SDL_RenderClear(renderer);
 	SDL_RenderCopy(renderer, texture, NULL, NULL);
 	SDL_RenderPresent(renderer);

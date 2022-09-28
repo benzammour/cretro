@@ -2,6 +2,7 @@
 #define LCD_H
 #include <stdint.h>
 #include <SDL2/SDL.h>
+
 #include "ch8.h"
 
 

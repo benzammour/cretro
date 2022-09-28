@@ -1,31 +1,33 @@
 #include <stdio.h>
 #include <stdint.h>
-#include "lcd.h"
-#include "ch8.h"
 #include <sys/time.h>
 
-uint64_t current_timestamp() {
-    struct timeval te; 
-    gettimeofday(&te, NULL); // get current time
-    uint64_t milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // calculate milliseconds
-    return milliseconds;
+#include "lcd.h"
+#include "ch8.h"
+
+int timediff_ms(struct timeval *end, struct timeval *start) {
+    int diff = (end->tv_sec - start->tv_sec) * 1000 + 
+		(end->tv_usec - start->tv_usec) / 1000;
+    return diff;
 }
 
+
 int main(int argc, char** argv) {
-	if (argc != 2) {
-		fprintf(stderr, "Usage: ./ch8 <ROM>\n");
+	if (argc != 3) {
+		fprintf(stderr, "Usage: ./ch8 <DELAY> <ROM>\n");
 	}
 	
 	machine_init();
 
-	const char* romFileName = argv[1];
-	uint8_t ret = rom_load(romFileName);
+	const uint16_t DELAY = strtol(argv[1], NULL, 10);
+	const char* ROM_FILE_NAME = argv[2];
+
+	uint8_t ret = rom_load(ROM_FILE_NAME);
 	if (ret) {
 		fprintf(stderr, "Failed to load ROM\n");
 		exit(-1);
 	}
 	printf("Successfully initialized ROM\n");
-
 
 	ret = lcd_init();
 	if (ret) {
@@ -36,18 +38,18 @@ int main(int argc, char** argv) {
 
 	int videoPitch = sizeof(m.video[0]) * VIDEO_WIDTH;
 
+	struct timeval clock_prev;
+	gettimeofday(&clock_prev, NULL);
+
 	uint8_t running = 1;
-	uint64_t before = current_timestamp();
 	while (running) {
+		struct timeval clock_now;
+	    gettimeofday(&clock_now, NULL);
+
 		running = lcd_process_input();
 
-		int trigger = (1000 / 60);
-		uint64_t currentTime = current_timestamp();
-
-		long dt = currentTime - before;
-		if (dt > trigger) {
-			before = currentTime;
-
+		uint64_t dt = timediff_ms(&clock_now, &clock_prev);
+		if (dt > DELAY) {
 			if (cpu_step()) {
 				break;
 			}
@@ -55,6 +57,7 @@ int main(int argc, char** argv) {
 			if (lcd_step(m.video, videoPitch)) {
 				break;
 			}
+			clock_prev = clock_now;
 		}
 	}
 
