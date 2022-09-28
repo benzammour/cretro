@@ -165,7 +165,7 @@ void OPC_Bnnn() {
 void OPC_Cxkk() {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t byte = GET_KK(m.opcode);
-	uint8_t random = 0xAB; // TODO: use PRNG!
+	uint8_t random = rand() & byte;
 	
 	m.registers[Vx] = random & byte;
 }

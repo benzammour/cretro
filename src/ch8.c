@@ -102,6 +102,7 @@ void F_PREFIXED() {
 
 void machine_init() {
 	m.PC = START_ADDRESS;
+	srand(time(NULL));
 	
 	for (int i = 0; i < FONTSET_SIZE; i++) {
         m.memory[FONTSET_START_ADDRESS + i] = fontset[i];

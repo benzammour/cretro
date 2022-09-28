@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
+#include <time.h>
 
 #define FONTSET_SIZE 80
 #define FONTSET_START_ADDRESS 0x00
