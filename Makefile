@@ -18,6 +18,7 @@ SOURCES		:= $(wildcard $(SRCDIR)/*.c)
 INCLUDES	:= $(wildcard $(SRCDIR)/*.h)
 OBJECTS		:= $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 rm			:= rm -f
+mkdir       := mkdir -p
 
 
 $(BINDIR)/$(TARGET): $(OBJECTS)
@@ -27,6 +28,9 @@ $(BINDIR)/$(TARGET): $(OBJECTS)
 $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
 	@$(CC) $(CFLAGS) -c $< -o $@
 	@echo "Compiled "$<" successfully!"
+
+$(BINDIR) $(OBJDIR):
+	@$(mkdir) $@
 
 .PHONY: clean
 clean:
