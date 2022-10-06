@@ -1,5 +1,5 @@
-#ifndef CH8_H
-#define CH8_H
+#ifndef CPU_H
+#define CPU_H
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>

@@ -53,6 +53,7 @@ dkms.conf
 
 # binaries
 ch8
+cretro
 .vscode/
 roms/*
 *.rom
