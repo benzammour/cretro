@@ -5,7 +5,7 @@
 #include <stdio.h>
 int nanosleep(const struct timespec *req, struct timespec *rem);
 #include <errno.h>  
-#include "ch8.h"
+#include "cpu.h"
 #include "sound.h"
 #include <sys/time.h>
 #include <pthread.h>
