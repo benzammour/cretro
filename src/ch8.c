@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "cpu_opcodes.h"
 #include "ch8.h"
+#include "sound.h"
 
 op_function instr_lookup[0xF + 1] = { [0 ... 0xF] = ILLEGAL_OPCODE };
 op_function zero_prefixed_lookup[0xE + 1] = { [0 ... 0xE] = ILLEGAL_OPCODE };
@@ -34,6 +35,7 @@ struct machine_t m = {
 	{ [0 ... (SCREEN_DIMENSIONS-1)] = 0 }, 
 	{ [0 ... (KEY_SIZE-1)] = 0 }, 
 	0, 
+	0,
 	0,
 	0,
 	0,
@@ -101,6 +103,9 @@ void F_PREFIXED() {
 }
 
 void machine_init() {
+	
+	sound_init();
+
 	m.PC = START_ADDRESS;
 	srand(time(NULL));
 	
@@ -163,14 +168,6 @@ uint8_t cpu_step() {
 	// Get and Execute Instruction 
 	(*(instr_lookup[(m.opcode & 0xF000) >> 12]))();
 
-	// Decrease timers if necessary
-	if (m.delay_timer > 0) {
-		m.delay_timer--;
-	}
-
-	if (m.sound_timer > 0) {
-		m.sound_timer--;
-	}
-
 	return 0;
 }
+

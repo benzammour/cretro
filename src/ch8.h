@@ -48,6 +48,7 @@ struct machine_t {
 	uint16_t opcode;
 	uint8_t delay_timer;
 	uint8_t sound_timer;
+	uint8_t should_beep;
 };
 
 extern struct machine_t m;
