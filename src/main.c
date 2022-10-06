@@ -1,15 +1,12 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <sys/time.h>
+#include <pthread.h>
 
 #include "lcd.h"
 #include "ch8.h"
-
-int timediff_ms(struct timeval *end, struct timeval *start) {
-    int diff = (end->tv_sec - start->tv_sec) * 1000 + 
-		(end->tv_usec - start->tv_usec) / 1000;
-    return diff;
-}
+#include "sound.h"
+#include "timer.h"
 
 
 int main(int argc, char** argv) {
@@ -41,8 +38,14 @@ int main(int argc, char** argv) {
 	struct timeval clock_prev;
 	gettimeofday(&clock_prev, NULL);
 
+	// create timer thread to decrease delay- and sound timer
+	pthread_t tid;
+	pthread_create(&tid, NULL, &timer_update_callback, NULL);
+
 	uint8_t running = 1;
 	while (running) {
+		handle_sound();
+
 		struct timeval clock_now;
 	    gettimeofday(&clock_now, NULL);
 
