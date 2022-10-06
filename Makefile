@@ -1,5 +1,5 @@
 # project name (generate executable with this name)
-TARGET	= ch8
+TARGET	= cretro
 
 CC	= gcc
 # compiling flags here

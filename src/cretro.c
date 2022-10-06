@@ -11,7 +11,7 @@
 
 int main(int argc, char** argv) {
 	if (argc != 3) {
-		fprintf(stderr, "Usage: ./ch8 <DELAY> <ROM>\n");
+		fprintf(stderr, "Usage: ./cretro <DELAY> <ROM>\n");
 	}
 	
 	machine_init();

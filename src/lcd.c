@@ -11,7 +11,7 @@ uint8_t lcd_init() {
 	SDL_Init(SDL_INIT_EVERYTHING);
 
 	window = SDL_CreateWindow(
-		"ch8 - Chip 8 Emulator",
+		"cretro - Chip 8 Emulator",
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
 		640, 320,
