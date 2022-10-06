@@ -5,7 +5,7 @@
 #include <SDL2/SDL_audio.h>
 #include <math.h>
 
-#include "ch8.h"
+#include "cpu.h"
 
 int sound_init();
 void handle_sound();

@@ -3,8 +3,7 @@
 #include <stdint.h>
 #include <SDL2/SDL.h>
 
-#include "ch8.h"
-
+#include "cpu.h"
 
 uint8_t lcd_init();
 uint8_t lcd_process_input();
