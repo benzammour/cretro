@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <errno.h>
 #include "cpu.h"
 #include "sound.h"
 
@@ -43,32 +44,49 @@ struct machine_t m = {
 	0
 };
 
-uint8_t rom_load(const char *filename) {
+void rom_load(const char *filename) {
     FILE *f;
 	uint8_t *tmpBuffer;
-	uint16_t romSize;
+	long romSize;
 
 	// Open ROM
     f = fopen(filename, "r");
-	if(f == NULL) {
-		return 1;
+	if (f == NULL) {
+        fprintf(stderr, "%s\n", strerror(errno));
+        return;
 	}
 
 	// Get the number of bytes
 	fseek(f, 0L, SEEK_END);
 	romSize = ftell(f);
-	
+    if (romSize < 0) {
+        fprintf(stderr, "%s\n", strerror(errno));
+        fclose(f);
+        return;
+    } else if (((unsigned long) romSize) >= UINT16_MAX) {
+        fprintf(stderr, "Size of rom %s (%ld) is larger than maximal allowed size %d\n", filename, romSize, UINT16_MAX);
+        fclose(f);
+        return;
+    }
+
 	// reset pointer to beginning of file
-	fseek(f, 0L, SEEK_SET);	
+	fseek(f, 0L, SEEK_SET);
 	
-	// grab sufficient memory for the buffer 
-	tmpBuffer = (uint8_t*) calloc(romSize, sizeof(uint8_t));	
-	if(tmpBuffer == NULL) {
-		fclose(f);
-		return 1;
+	// grab sufficient memory for the buffer
+	tmpBuffer = (uint8_t*) calloc((size_t) romSize, sizeof(uint8_t));
+	if (tmpBuffer == NULL) {
+        fprintf(stderr, "Failed to allocate %ld bytes of memory\n", romSize);
+        fclose(f);
+		return;
 	}
 
-	fread(tmpBuffer, sizeof(uint8_t), romSize, f);
+	size_t bytesRead = fread(tmpBuffer, sizeof(uint8_t), (size_t) romSize, f);
+    if (bytesRead != (size_t) romSize) {
+        fprintf(stderr, "An error occurred while reading bytes from rom\n");
+        fclose(f);
+        return;
+    }
+
 	fclose(f);
 	
 	// copy rom into buffer
@@ -77,36 +95,38 @@ uint8_t rom_load(const char *filename) {
 	}
 
 	free(tmpBuffer);
-
-    return 0;
 }
 
-void ILLEGAL_OPCODE() {
-	printf("Unallowed OP Code!\n");
+// Function is used for instruction array initialization, not recognized by compiler
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+void ILLEGAL_OPCODE(void) {
+    printf("Unallowed OP Code!\n");
 }
+#pragma GCC diagnostic pop
 
-void ZERO_PREFIXED() {
+static void ZERO_PREFIXED(void) {
 	zero_prefixed_lookup[GET_N(m.opcode)]();
 }
 
-void EIGHT_PREFIXED() {
+static void EIGHT_PREFIXED(void) {
 	eight_prefixed_lookup[GET_N(m.opcode)]();
 }
 
-void E_PREFIXED() {
+static void E_PREFIXED(void) {
 	e_prefixed_lookup[GET_N(m.opcode)]();
 }
 
-void F_PREFIXED() {
+static void F_PREFIXED(void) {
 	f_prefixed_lookup[GET_KK(m.opcode)]();
 }
 
-void machine_init() {
+void machine_init(void) {
 	
 	sound_init();
 
 	m.PC = START_ADDRESS;
-	srand(time(NULL));
+	srand((unsigned int) time(NULL));
 	
 	for (int i = 0; i < FONTSET_SIZE; i++) {
         m.memory[FONTSET_START_ADDRESS + i] = fontset[i];
@@ -158,7 +178,7 @@ void machine_init() {
 
 }
 
-uint8_t cpu_step() {
+uint8_t cpu_step(void) {
 	// Get opcode and increment PC
 	m.opcode = (m.memory[m.PC] << 8) | m.memory[m.PC + 1];
 
@@ -171,29 +191,29 @@ uint8_t cpu_step() {
 }
 
 // OP-Codes:
-void OPC_00E0() {
+void OPC_00E0(void) {
 	memset(m.video, 0, sizeof(m.video));
 }
 
-void OPC_00EE() {
+void OPC_00EE(void) {
 	m.SP--;
 	m.PC = m.stack[m.SP];
 }
 
-void OPC_1nnn() {
+void OPC_1nnn(void) {
 	uint16_t address = GET_NNN(m.opcode);
 
 	m.PC = address;
 }
 
-void OPC_2nnn() {
+void OPC_2nnn(void) {
 	m.stack[m.SP] = m.PC;
 	m.SP++;
 
 	m.PC = GET_NNN(m.opcode);
 }
 
-void OPC_3xkk() {
+void OPC_3xkk(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t byte = GET_KK(m.opcode);
 
@@ -202,7 +222,7 @@ void OPC_3xkk() {
 	}
 }
 
-void OPC_4xkk() {
+void OPC_4xkk(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t byte = GET_KK(m.opcode);
 
@@ -211,7 +231,7 @@ void OPC_4xkk() {
 	}
 }
 
-void OPC_5xy0() {
+void OPC_5xy0(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t Vy = GET_Y(m.opcode);
 
@@ -220,60 +240,60 @@ void OPC_5xy0() {
 	}
 }
 
-void OPC_6xkk() {
+void OPC_6xkk(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t byte = GET_KK(m.opcode);
 
 	m.registers[Vx] = byte;
 }
 
-void OPC_7xkk() {
+void OPC_7xkk(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t byte = GET_KK(m.opcode);
 
 	m.registers[Vx] += byte;
 }
 
-void OPC_8xy0() {
+void OPC_8xy0(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t Vy = GET_Y(m.opcode);
 
 	m.registers[Vx] = m.registers[Vy];
 }
 
-void OPC_8xy1() {
+void OPC_8xy1(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t Vy = GET_Y(m.opcode);
 
 	m.registers[Vx] |= m.registers[Vy];
 }
 
-void OPC_8xy2() {
+void OPC_8xy2(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t Vy = GET_Y(m.opcode);
 
 	m.registers[Vx] &= m.registers[Vy];
 }
 
-void OPC_8xy3() {
+void OPC_8xy3(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t Vy = GET_Y(m.opcode);
 
 	m.registers[Vx] ^= m.registers[Vy];
 }
 
-void OPC_8xy4() {
+void OPC_8xy4(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t Vy = GET_Y(m.opcode);
 
 	uint16_t sum = m.registers[Vx] + m.registers[Vy];
 
-	m.registers[0xF] = (sum > 255) ? 1 : 0;
+	m.registers[0xF] = sum > 255;
 
-	m.registers[Vx] = sum & 0xFF;
+	m.registers[Vx] = (uint8_t) (sum & 0xFF);
 }
 
-void OPC_8xy5() {
+void OPC_8xy5(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t Vy = GET_Y(m.opcode);
 
@@ -282,7 +302,7 @@ void OPC_8xy5() {
 	m.registers[Vx] -= m.registers[Vy];
 }
 
-void OPC_8xy6() {
+void OPC_8xy6(void) {
 	uint8_t Vx = GET_X(m.opcode);
 
 	// Save LSB in VF
@@ -291,7 +311,7 @@ void OPC_8xy6() {
 	m.registers[Vx] = m.registers[Vx] >> 1;
 }
 
-void OPC_8xy7() {
+void OPC_8xy7(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t Vy = GET_Y(m.opcode);
 
@@ -300,7 +320,7 @@ void OPC_8xy7() {
 	m.registers[Vx] = m.registers[Vy] - m.registers[Vx];
 }
 
-void OPC_8xyE() {
+void OPC_8xyE(void) {
 	uint8_t Vx = GET_X(m.opcode);
 
 	// Save MSB in VF because if msb = 1 set VF to 1
@@ -310,7 +330,7 @@ void OPC_8xyE() {
 	m.registers[Vx] = m.registers[Vx] << 1;
 }
 
-void OPC_9xy0() {
+void OPC_9xy0(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t Vy = GET_Y(m.opcode);
 
@@ -319,28 +339,28 @@ void OPC_9xy0() {
 	}
 }
 
-void OPC_Annn() {
+void OPC_Annn(void) {
 	uint16_t reg_addr = GET_NNN(m.opcode);
 
 	m.index = reg_addr;
 }
 
-void OPC_Bnnn() {
+void OPC_Bnnn(void) {
 	uint16_t reg_addr = GET_NNN(m.opcode);
 	uint8_t offset = m.registers[0];
 	
 	m.PC = reg_addr + offset;
 }
 
-void OPC_Cxkk() {
+void OPC_Cxkk(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t byte = GET_KK(m.opcode);
-	uint8_t random = rand() & byte;
+	uint8_t random = (uint8_t) (rand() & byte);
 	
 	m.registers[Vx] = random & byte;
 }
 
-void OPC_Dxyn() {
+void OPC_Dxyn(void) {
 	uint8_t Vx = (m.opcode & 0x0F00u) >> 8u;
 	uint8_t Vy = (m.opcode & 0x00F0u) >> 4u;
 	uint8_t height = m.opcode & 0x000Fu;
@@ -370,7 +390,7 @@ void OPC_Dxyn() {
 	}
 }
 
-void OPC_Ex9E() {
+void OPC_Ex9E(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t key = m.registers[Vx];
 
@@ -379,7 +399,7 @@ void OPC_Ex9E() {
 	}
 }
 
-void OPC_ExA1() {
+void OPC_ExA1(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t key = m.registers[Vx];
 
@@ -388,17 +408,17 @@ void OPC_ExA1() {
 	}
 }
 
-void OPC_Fx07() {
+void OPC_Fx07(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	m.registers[Vx] = m.delay_timer;
 }
 
-void OPC_Fx0A() {
+void OPC_Fx0A(void) {
 	uint8_t Vx = GET_X(m.opcode);
 
 	for (int i = 0; i < 16; i++) {
 		if (m.keys[i]) {
-			m.registers[Vx] = i;
+			m.registers[Vx] = (uint8_t) i;
 			return;
 		}
 	}
@@ -406,32 +426,32 @@ void OPC_Fx0A() {
 	m.PC -= 2;
 }
 
-void OPC_Fx15() {
+void OPC_Fx15(void) {
 	uint8_t Vx = GET_X(m.opcode);
 
 	m.delay_timer = m.registers[Vx];
 }
 
-void OPC_Fx18() {
+void OPC_Fx18(void) {
 	uint8_t Vx = GET_X(m.opcode);
 
 	m.sound_timer = m.registers[Vx];
 }
 
-void OPC_Fx1E() {
+void OPC_Fx1E(void) {
 	uint8_t Vx = GET_X(m.opcode);
 
 	m.index += m.registers[Vx];
 }
 
-void OPC_Fx29() {
+void OPC_Fx29(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t value = m.registers[Vx];
 
 	m.index = FONTSET_START_ADDRESS + (5 * value); // 5 = font char width
 }
 
-void OPC_Fx33() {
+void OPC_Fx33(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t value = m.registers[Vx];
 
@@ -447,7 +467,7 @@ void OPC_Fx33() {
 	m.memory[m.index] = value % 10;
 }
 
-void OPC_Fx55() {
+void OPC_Fx55(void) {
 	uint8_t Vx = GET_X(m.opcode);
 
 	for (uint8_t i = 0; i <= Vx; i++) {
@@ -455,7 +475,7 @@ void OPC_Fx55() {
 	}
 }
 
-void OPC_Fx65() {
+void OPC_Fx65(void) {
 	uint8_t Vx = GET_X(m.opcode);
 
 	for (uint8_t i = 0; i <= Vx; i++) {

@@ -7,7 +7,7 @@ static SDL_Window *window;
 SDL_Renderer *renderer;
 SDL_Texture *texture;
 
-uint8_t lcd_init() {
+uint8_t lcd_init(void) {
 	SDL_Init(SDL_INIT_EVERYTHING);
 
 	window = SDL_CreateWindow(
@@ -24,9 +24,9 @@ uint8_t lcd_init() {
 	return 0;
 }
 
-uint8_t lcd_process_input() {
+bool lcd_process_input(void) {
 	SDL_Event e;
-	int running = 1;
+	bool running = true;
 
 	while (SDL_PollEvent(&e)) {
 		switch (e.type) {
@@ -86,6 +86,9 @@ uint8_t lcd_process_input() {
 				case SDLK_v:
 					m.keys[0xF] = 1;
 					break;
+                default:
+                    // Ignore unknown keys
+                    break;
 			}
 			break;
 		case SDL_KEYUP:
@@ -138,8 +141,14 @@ uint8_t lcd_process_input() {
 				case SDLK_v:
 					m.keys[0xF] = 0;
 					break;
+                default:
+                    // Ignore unknown keys
+                    break;
 		}
 			break;
+        default:
+            // Ignore unknown key events
+            break;
 		}
 	}
 

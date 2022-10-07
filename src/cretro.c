@@ -12,21 +12,23 @@
 int main(int argc, char** argv) {
 	if (argc != 3) {
 		fprintf(stderr, "Usage: ./cretro <DELAY> <ROM>\n");
+        return EXIT_FAILURE;
 	}
 	
 	machine_init();
 
-	const uint16_t DELAY = strtol(argv[1], NULL, 10);
+    long inputDelay = strtol(argv[1], NULL, 10);
+    if (inputDelay > UINT16_MAX) {
+        fprintf(stderr, "Provided delay %ld is higher than allowed delay %d\n", inputDelay, UINT16_MAX);
+        return EXIT_FAILURE;
+    }
+	const uint16_t DELAY = (uint16_t) inputDelay;
 	const char* ROM_FILE_NAME = argv[2];
 
-	uint8_t ret = rom_load(ROM_FILE_NAME);
-	if (ret) {
-		fprintf(stderr, "Failed to load ROM\n");
-		exit(-1);
-	}
+	rom_load(ROM_FILE_NAME);
 	printf("Successfully initialized ROM\n");
 
-	ret = lcd_init();
+	uint8_t ret = lcd_init();
 	if (ret) {
 		fprintf(stderr, "Failed to initialize LCD\n");
 		exit(-3);
@@ -50,7 +52,7 @@ int main(int argc, char** argv) {
 
 		struct timeval clock_now;
 	    gettimeofday(&clock_now, NULL);
-		uint64_t dt = timediff_ms(&clock_now, &cpu_clock_prev);
+		long dt = timediff_ms(&clock_now, &cpu_clock_prev);
 		if (dt > DELAY) {
 			if (cpu_step() || lcd_step(m.video, videoPitch)) {
 				break;
@@ -62,5 +64,5 @@ int main(int argc, char** argv) {
 
 	SDL_Quit();
 
-	return 0;
+    return EXIT_SUCCESS;
 }

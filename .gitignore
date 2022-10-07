@@ -55,6 +55,7 @@ dkms.conf
 ch8
 cretro
 .vscode/
+.idea/
 roms/*
 *.rom
 *.ch8
