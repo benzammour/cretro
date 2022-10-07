@@ -2,9 +2,9 @@
 
 #define TIMER_DELAY (1000 / 60)
 
-int timediff_ms(struct timeval *end, struct timeval *start) {
-    int diff = (end->tv_sec - start->tv_sec) * 1000 + 
-		(end->tv_usec - start->tv_usec) / 1000;
+__attribute__((pure)) long timediff_ms(struct timeval *end, struct timeval *start) {
+    long diff = (end->tv_sec - start->tv_sec) * 1000L +
+		(end->tv_usec - start->tv_usec) / 1000L;
     return diff;
 }
   
@@ -27,12 +27,11 @@ int msleep(long msec) {
     return res;
 }
 
-void *timer_update_callback() {
+_Noreturn void *timer_update_callback(void*) {
     while(1) {
         msleep(TIMER_DELAY);
         update_timers();
     }
-    return 0;
 }
 
 int update_timers() {

@@ -7,7 +7,7 @@
 
 #include "cpu.h"
 
-int sound_init();
-void handle_sound();
+int sound_init(void);
+void handle_sound(void);
 
 #endif

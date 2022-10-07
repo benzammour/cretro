@@ -4,20 +4,26 @@
 #define AMPLITUDE 127
 #define FREQUENCY 44100
 
-void audio_callback(void *user_data, Uint8 *stream, int len) {
-    SDL_memset(stream, 0, len);
-    (void) user_data; // tell the compile that user_data is not used
+static void audio_callback(void *user_data, uint8_t *stream, int len) {
+    if (len < 0) {
+        fprintf(stderr, "len cannot be negative\n");
+    } else if (sizeof(int) > sizeof(size_t) && len > SIZE_MAX) {
+        fprintf(stderr, "len %d is larger than allowed %lu\n", len, SIZE_MAX);
+    }
+
+    SDL_memset(stream, 0, (size_t) len);
+    (void) user_data; // tell the compiler that user_data is not used
 
     for (int i = 0; i < len; i++) {
-        stream[i] = (AMPLITUDE * sin(i * PI * 2 * 604.1 / FREQUENCY));
+        stream[i] = (uint8_t) (AMPLITUDE * sin(i * PI * 2 * 604.1 / FREQUENCY));
     }
 }
 
-void sound_play() {
+static void sound_play(void) {
     SDL_PauseAudio(0);
 }
 
-void sound_stop() {
+static void sound_stop(void) {
     SDL_PauseAudio(1);
 }
 
