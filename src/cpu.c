@@ -46,7 +46,6 @@ struct machine_t m = {
 
 void rom_load(const char *filename) {
     FILE *f;
-	uint8_t *tmpBuffer;
 	long romSize;
 
 	// Open ROM
@@ -71,16 +70,8 @@ void rom_load(const char *filename) {
 
 	// reset pointer to beginning of file
 	fseek(f, 0L, SEEK_SET);
-	
-	// grab sufficient memory for the buffer
-	tmpBuffer = (uint8_t*) calloc((size_t) romSize, sizeof(uint8_t));
-	if (tmpBuffer == NULL) {
-        fprintf(stderr, "Failed to allocate %ld bytes of memory\n", romSize);
-        fclose(f);
-		return;
-	}
 
-	size_t bytesRead = fread(tmpBuffer, sizeof(uint8_t), (size_t) romSize, f);
+	size_t bytesRead = fread(&m.memory[START_ADDRESS], sizeof(uint8_t), (size_t) romSize, f);
     if (bytesRead != (size_t) romSize) {
         fprintf(stderr, "An error occurred while reading bytes from rom\n");
         fclose(f);
@@ -88,13 +79,6 @@ void rom_load(const char *filename) {
     }
 
 	fclose(f);
-	
-	// copy rom into buffer
-	for (uint16_t i = 0; i < romSize; i++) {
-		m.memory[START_ADDRESS + i] = tmpBuffer[i];
-	}
-
-	free(tmpBuffer);
 }
 
 // Function is used for instruction array initialization, not recognized by compiler
