@@ -28,7 +28,7 @@ uint8_t fontset[FONTSET_SIZE] = {
 	0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
 
-struct machine_t m = { 
+machine_t m = {
 	{ [0 ... (4096-1)] = 0 }, 
 	{ [0 ... (REGISTER_COUNT-1)] = 0 }, 
 	{ [0 ... (STACK_LEVELS-1)] = 0 }, 
@@ -46,7 +46,6 @@ struct machine_t m = {
 
 void rom_load(const char *filename) {
     FILE *f;
-	uint8_t *tmpBuffer;
 	long romSize;
 
 	// Open ROM
@@ -71,16 +70,8 @@ void rom_load(const char *filename) {
 
 	// reset pointer to beginning of file
 	fseek(f, 0L, SEEK_SET);
-	
-	// grab sufficient memory for the buffer
-	tmpBuffer = (uint8_t*) calloc((size_t) romSize, sizeof(uint8_t));
-	if (tmpBuffer == NULL) {
-        fprintf(stderr, "Failed to allocate %ld bytes of memory\n", romSize);
-        fclose(f);
-		return;
-	}
 
-	size_t bytesRead = fread(tmpBuffer, sizeof(uint8_t), (size_t) romSize, f);
+	size_t bytesRead = fread(&m.memory[START_ADDRESS], sizeof(uint8_t), (size_t) romSize, f);
     if (bytesRead != (size_t) romSize) {
         fprintf(stderr, "An error occurred while reading bytes from rom\n");
         fclose(f);
@@ -88,13 +79,6 @@ void rom_load(const char *filename) {
     }
 
 	fclose(f);
-	
-	// copy rom into buffer
-	for (uint16_t i = 0; i < romSize; i++) {
-		m.memory[START_ADDRESS + i] = tmpBuffer[i];
-	}
-
-	free(tmpBuffer);
 }
 
 // Function is used for instruction array initialization, not recognized by compiler
@@ -122,15 +106,12 @@ static void F_PREFIXED(void) {
 }
 
 void machine_init(void) {
-	
 	sound_init();
 
 	m.PC = START_ADDRESS;
 	srand((unsigned int) time(NULL));
 	
-	for (int i = 0; i < FONTSET_SIZE; i++) {
-        m.memory[FONTSET_START_ADDRESS + i] = fontset[i];
-    }
+    memcpy(&m.memory[FONTSET_START_ADDRESS], fontset, FONTSET_SIZE);
 
 	// Set up lookup table
 	instr_lookup[0x0] = ZERO_PREFIXED;
@@ -175,7 +156,6 @@ void machine_init(void) {
 	f_prefixed_lookup[0x33] = OPC_Fx33;
 	f_prefixed_lookup[0x55] = OPC_Fx55;
 	f_prefixed_lookup[0x65] = OPC_Fx65;
-
 }
 
 uint8_t cpu_step(void) {
@@ -196,7 +176,7 @@ void OPC_00E0(void) {
 }
 
 void OPC_00EE(void) {
-	m.SP--;
+	--m.SP;
 	m.PC = m.stack[m.SP];
 }
 
@@ -208,7 +188,7 @@ void OPC_1nnn(void) {
 
 void OPC_2nnn(void) {
 	m.stack[m.SP] = m.PC;
-	m.SP++;
+	++m.SP;
 
 	m.PC = GET_NNN(m.opcode);
 }
@@ -297,7 +277,7 @@ void OPC_8xy5(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t Vy = GET_Y(m.opcode);
 
-	m.registers[0xF] = (m.registers[Vx] > m.registers[Vy]) ? 1 : 0;
+	m.registers[0xF] = m.registers[Vx] > m.registers[Vy];
 
 	m.registers[Vx] -= m.registers[Vy];
 }
@@ -306,7 +286,7 @@ void OPC_8xy6(void) {
 	uint8_t Vx = GET_X(m.opcode);
 
 	// Save LSB in VF
-	m.registers[0xF] = (m.registers[Vx] & 0x1);
+	m.registers[0xF] = m.registers[Vx] & 0x1;
 
 	m.registers[Vx] = m.registers[Vx] >> 1;
 }
@@ -315,7 +295,7 @@ void OPC_8xy7(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t Vy = GET_Y(m.opcode);
 
-	m.registers[0xF] = (m.registers[Vy] > m.registers[Vx]) ? 1 : 0;
+	m.registers[0xF] = m.registers[Vy] > m.registers[Vx];
 
 	m.registers[Vx] = m.registers[Vy] - m.registers[Vx];
 }
@@ -368,13 +348,15 @@ void OPC_Dxyn(void) {
 	// Wrap if going beyond screen boundaries
 	uint8_t vxValue = m.registers[Vx] % VIDEO_WIDTH;
 	uint8_t vyValue = m.registers[Vy] % VIDEO_HEIGHT;
+    //uint8_t vxValue = FAST_MODULO(m.registers[Vx], VIDEO_WIDTH);
+    //uint8_t vyValue = FAST_MODULO(m.registers[Vy], VIDEO_HEIGHT);
 
 	m.registers[0xF] = 0;
 
-	for (uint8_t row = 0; row < height; row++) {
+	for (uint8_t row = 0; row < height; ++row) {
 		uint8_t spritePixel = m.memory[m.index + row];
 
-		for (uint8_t col = 0; col < 8; col++) {
+		for (uint8_t col = 0; col < 8; ++col) {
 			uint8_t bit = spritePixel & (0b10000000 >> col);
 			uint32_t* pixel = &m.video[(vyValue + row) * VIDEO_WIDTH + (vxValue + col)];
 
@@ -416,7 +398,7 @@ void OPC_Fx07(void) {
 void OPC_Fx0A(void) {
 	uint8_t Vx = GET_X(m.opcode);
 
-	for (int i = 0; i < 16; i++) {
+	for (int i = 0; i < 16; ++i) {
 		if (m.keys[i]) {
 			m.registers[Vx] = (uint8_t) i;
 			return;
@@ -470,15 +452,11 @@ void OPC_Fx33(void) {
 void OPC_Fx55(void) {
 	uint8_t Vx = GET_X(m.opcode);
 
-	for (uint8_t i = 0; i <= Vx; i++) {
-		m.memory[m.index + i] = m.registers[i];
-	}
+    memcpy(&m.memory[m.index], m.registers, Vx + 1);
 }
 
 void OPC_Fx65(void) {
 	uint8_t Vx = GET_X(m.opcode);
 
-	for (uint8_t i = 0; i <= Vx; i++) {
-		m.registers[i] = m.memory[m.index + i];
-	}
+    memcpy(m.registers, &m.memory[m.index], Vx + 1);
 }
