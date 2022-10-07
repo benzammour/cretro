@@ -28,7 +28,7 @@ uint8_t fontset[FONTSET_SIZE] = {
 	0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
 
-struct machine_t m = { 
+machine_t m = {
 	{ [0 ... (4096-1)] = 0 }, 
 	{ [0 ... (REGISTER_COUNT-1)] = 0 }, 
 	{ [0 ... (STACK_LEVELS-1)] = 0 }, 

@@ -9,6 +9,7 @@
 #define FONTSET_SIZE 80
 #define FONTSET_START_ADDRESS 0x00
 #define START_ADDRESS 0x200
+#define MEMORY_SIZE 4096
 #define REGISTER_COUNT 16
 #define STACK_LEVELS 16
 #define SCALE_FACTOR 100
@@ -37,8 +38,8 @@ uint8_t cpu_step(void);
 // Do nothing
 void ILLEGAL_OPCODE(void);
 
-struct machine_t {
-	uint8_t memory[4096];
+typedef struct machine_t {
+	uint8_t memory[MEMORY_SIZE];
 	uint8_t registers[REGISTER_COUNT];
 	uint16_t stack[STACK_LEVELS];
 	uint32_t video[SCREEN_DIMENSIONS];
@@ -52,9 +53,9 @@ struct machine_t {
 	uint8_t delay_timer;
 	uint8_t sound_timer;
 	uint8_t should_beep;
-};
+} machine_t;
 
-extern struct machine_t m;
+extern machine_t m;
 
 typedef void (*op_function)(void);
 
