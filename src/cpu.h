@@ -23,6 +23,9 @@
 #define GET_KK(opcode) ((uint8_t) (opcode & 0x00FF))
 #define GET_NNN(opcode) ((uint16_t) (opcode & 0x0FFF))
 
+// NOTE: This only works when y is a power of two
+#define FAST_MODULO(x, y) (x & (y - 1))
+
 
 void rom_load(const char *filename);
 uint8_t *get_rom_bytes(void);

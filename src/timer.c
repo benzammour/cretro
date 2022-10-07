@@ -27,25 +27,23 @@ int msleep(long msec) {
     return res;
 }
 
-_Noreturn void *timer_update_callback(void*) {
-    while(1) {
-        msleep(TIMER_DELAY);
-        update_timers();
-    }
-}
-
-int update_timers() {
+static void update_timers(void) {
     // Decrease timers if necessary
     if (m.delay_timer > 0) {
-        m.delay_timer--;
+        --m.delay_timer;
     }
 
     if (m.sound_timer > 0) {
         m.should_beep = 1;
-        m.sound_timer--;
+        --m.sound_timer;
     } else {
         m.should_beep = 0;
     }
+}
 
-    return 0;
+_Noreturn void *timer_update_callback(void*) {
+    while (1) {
+        msleep(TIMER_DELAY);
+        update_timers();
+    }
 }

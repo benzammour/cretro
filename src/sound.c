@@ -14,7 +14,7 @@ static void audio_callback(void *user_data, uint8_t *stream, int len) {
     SDL_memset(stream, 0, (size_t) len);
     (void) user_data; // tell the compiler that user_data is not used
 
-    for (int i = 0; i < len; i++) {
+    for (int i = 0; i < len; ++i) {
         stream[i] = (uint8_t) (AMPLITUDE * sin(i * PI * 2 * 604.1 / FREQUENCY));
     }
 }
@@ -36,7 +36,7 @@ int sound_init() {
     want.callback = audio_callback; // callback to refill buffer
 
     SDL_AudioSpec have;
-    if(SDL_OpenAudio(&want, &have)) {
+    if (SDL_OpenAudio(&want, &have)) {
         SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "Failed to open audio: %s", SDL_GetError());
         return 1;
     }
