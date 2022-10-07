@@ -3,7 +3,13 @@ TARGET	= cretro
 
 CC	= gcc
 # compiling flags here
-CFLAGS   = -g -std=c17 -Wall -Wextra -Werror
+CFLAGS   = -g -std=c17 -Wall -Wextra -Werror -Wunused -Wshadow -Wcast-align -Wconversion\
+           -Wlogical-op -Wdouble-promotion -fstack-protector -Wstack-protector -Wredundant-decls -Wpacked -Wmissing-declarations\
+           -Wmissing-prototypes -Wstrict-prototypes -Wno-aggressive-loop-optimizations -Wjump-misses-init -Wwrite-strings\
+           -Wcast-qual -Wundef -funsafe-loop-optimizations -Wunsafe-loop-optimizations -Wfloat-equal -Wtrampolines -Warray-bounds=2\
+           -Wsuggest-attribute=cold -Wsuggest-attribute=malloc -Wsuggest-attribute=pure -Wsuggest-attribute=const\
+           -Wsuggest-attribute=noreturn -Wsuggest-attribute=format -Wstrict-overflow=4 -Wswitch-enum -Wswitch-default\
+           -Wmissing-include-dirs -Wformat=2 -O3
 
 LINKER	= gcc
 # linking flags here
