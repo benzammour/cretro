@@ -106,15 +106,12 @@ static void F_PREFIXED(void) {
 }
 
 void machine_init(void) {
-	
 	sound_init();
 
 	m.PC = START_ADDRESS;
 	srand((unsigned int) time(NULL));
 	
-	for (int i = 0; i < FONTSET_SIZE; i++) {
-        m.memory[FONTSET_START_ADDRESS + i] = fontset[i];
-    }
+    memcpy(&m.memory[FONTSET_START_ADDRESS], fontset, FONTSET_SIZE);
 
 	// Set up lookup table
 	instr_lookup[0x0] = ZERO_PREFIXED;
@@ -159,7 +156,6 @@ void machine_init(void) {
 	f_prefixed_lookup[0x33] = OPC_Fx33;
 	f_prefixed_lookup[0x55] = OPC_Fx55;
 	f_prefixed_lookup[0x65] = OPC_Fx65;
-
 }
 
 uint8_t cpu_step(void) {
@@ -180,7 +176,7 @@ void OPC_00E0(void) {
 }
 
 void OPC_00EE(void) {
-	m.SP--;
+	--m.SP;
 	m.PC = m.stack[m.SP];
 }
 
@@ -192,7 +188,7 @@ void OPC_1nnn(void) {
 
 void OPC_2nnn(void) {
 	m.stack[m.SP] = m.PC;
-	m.SP++;
+	++m.SP;
 
 	m.PC = GET_NNN(m.opcode);
 }
@@ -281,7 +277,7 @@ void OPC_8xy5(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t Vy = GET_Y(m.opcode);
 
-	m.registers[0xF] = (m.registers[Vx] > m.registers[Vy]) ? 1 : 0;
+	m.registers[0xF] = m.registers[Vx] > m.registers[Vy];
 
 	m.registers[Vx] -= m.registers[Vy];
 }
@@ -290,7 +286,7 @@ void OPC_8xy6(void) {
 	uint8_t Vx = GET_X(m.opcode);
 
 	// Save LSB in VF
-	m.registers[0xF] = (m.registers[Vx] & 0x1);
+	m.registers[0xF] = m.registers[Vx] & 0x1;
 
 	m.registers[Vx] = m.registers[Vx] >> 1;
 }
@@ -299,7 +295,7 @@ void OPC_8xy7(void) {
 	uint8_t Vx = GET_X(m.opcode);
 	uint8_t Vy = GET_Y(m.opcode);
 
-	m.registers[0xF] = (m.registers[Vy] > m.registers[Vx]) ? 1 : 0;
+	m.registers[0xF] = m.registers[Vy] > m.registers[Vx];
 
 	m.registers[Vx] = m.registers[Vy] - m.registers[Vx];
 }
@@ -352,13 +348,15 @@ void OPC_Dxyn(void) {
 	// Wrap if going beyond screen boundaries
 	uint8_t vxValue = m.registers[Vx] % VIDEO_WIDTH;
 	uint8_t vyValue = m.registers[Vy] % VIDEO_HEIGHT;
+    //uint8_t vxValue = FAST_MODULO(m.registers[Vx], VIDEO_WIDTH);
+    //uint8_t vyValue = FAST_MODULO(m.registers[Vy], VIDEO_HEIGHT);
 
 	m.registers[0xF] = 0;
 
-	for (uint8_t row = 0; row < height; row++) {
+	for (uint8_t row = 0; row < height; ++row) {
 		uint8_t spritePixel = m.memory[m.index + row];
 
-		for (uint8_t col = 0; col < 8; col++) {
+		for (uint8_t col = 0; col < 8; ++col) {
 			uint8_t bit = spritePixel & (0b10000000 >> col);
 			uint32_t* pixel = &m.video[(vyValue + row) * VIDEO_WIDTH + (vxValue + col)];
 
@@ -400,7 +398,7 @@ void OPC_Fx07(void) {
 void OPC_Fx0A(void) {
 	uint8_t Vx = GET_X(m.opcode);
 
-	for (int i = 0; i < 16; i++) {
+	for (int i = 0; i < 16; ++i) {
 		if (m.keys[i]) {
 			m.registers[Vx] = (uint8_t) i;
 			return;
@@ -454,15 +452,11 @@ void OPC_Fx33(void) {
 void OPC_Fx55(void) {
 	uint8_t Vx = GET_X(m.opcode);
 
-	for (uint8_t i = 0; i <= Vx; i++) {
-		m.memory[m.index + i] = m.registers[i];
-	}
+    memcpy(&m.memory[m.index], m.registers, Vx + 1);
 }
 
 void OPC_Fx65(void) {
 	uint8_t Vx = GET_X(m.opcode);
 
-	for (uint8_t i = 0; i <= Vx; i++) {
-		m.registers[i] = m.memory[m.index + i];
-	}
+    memcpy(m.registers, &m.memory[m.index], Vx + 1);
 }
