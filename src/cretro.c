@@ -28,11 +28,7 @@ int main(int argc, char** argv) {
 	rom_load(ROM_FILE_NAME);
 	printf("Successfully initialized ROM\n");
 
-	uint8_t ret = lcd_init();
-	if (ret) {
-		fprintf(stderr, "Failed to initialize LCD\n");
-		exit(-3);
-	}
+	lcd_init();
 	printf("Successfully initialized LCD\n");
 
 	int videoPitch = sizeof(m.video[0]) * VIDEO_WIDTH;
@@ -54,10 +50,8 @@ int main(int argc, char** argv) {
 	    gettimeofday(&clock_now, NULL);
 		long dt = timediff_ms(&clock_now, &cpu_clock_prev);
 		if (dt > DELAY) {
-			if (cpu_step() || lcd_step(m.video, videoPitch)) {
-				break;
-			}
-
+			cpu_step();
+			lcd_step(m.video, videoPitch);
 			cpu_clock_prev = clock_now;
 		}
 	}
