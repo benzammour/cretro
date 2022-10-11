@@ -2,9 +2,8 @@
 
 #define TIMER_DELAY (1000 / 60)
 
-long timediff_ms(const struct timeval *end, const struct timeval *start) {
-    long diff = (end->tv_sec - start->tv_sec) * 1000L +
-		(end->tv_usec - start->tv_usec) / 1000L;
+long timediff_us(const struct timeval *end, const struct timeval *start) {
+    long diff = (end->tv_sec - start->tv_sec) * 1000000L + (end->tv_usec - start->tv_usec);
     return diff;
 }
   
