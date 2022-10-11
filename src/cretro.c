@@ -11,18 +11,18 @@
 
 int main(int argc, char** argv) {
 	if (argc != 3) {
-		fprintf(stderr, "Usage: ./cretro <DELAY> <ROM>\n");
+		fprintf(stderr, "Usage: ./cretro <CPU-FREQUENCY-IN-HZ> <ROM>\n");
         return EXIT_FAILURE;
 	}
 	
 	machine_init();
 
-    long inputDelay = strtol(argv[1], NULL, 10);
-    if (inputDelay > UINT16_MAX) {
-        fprintf(stderr, "Provided delay %ld is higher than allowed delay %d\n", inputDelay, UINT16_MAX);
+    long inputHertz = strtol(argv[1], NULL, 10);
+    if (inputHertz > 1000000L) {
+        fprintf(stderr, "Provided frequency %ld Hz is higher than allowed frequency %ld Hz\n", inputHertz, 1000000L);
         return EXIT_FAILURE;
     }
-	const uint16_t DELAY = (uint16_t) inputDelay;
+	const uint32_t USECOND_DELAY = (uint32_t) (1000000L / inputHertz);
 	const char* ROM_FILE_NAME = argv[2];
 
 	rom_load(ROM_FILE_NAME);
@@ -48,8 +48,8 @@ int main(int argc, char** argv) {
 
 		struct timeval clock_now;
 	    gettimeofday(&clock_now, NULL);
-		long dt = timediff_ms(&clock_now, &cpu_clock_prev);
-		if (dt > DELAY) {
+		long dt = timediff_us(&clock_now, &cpu_clock_prev);
+		if (dt > USECOND_DELAY) {
 			cpu_step();
 			lcd_step(m.video, videoPitch);
 			cpu_clock_prev = clock_now;
