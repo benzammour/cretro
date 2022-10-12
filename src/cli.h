@@ -16,7 +16,7 @@
 typedef struct config {
     bool debug;
     uint32_t us_delay;
-    const char* rom;
+    const char* rom_path;
 } config_t;
 
 config_t* cli_config_default(void);
