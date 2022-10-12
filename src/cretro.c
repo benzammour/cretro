@@ -8,25 +8,17 @@
 #include "cpu.h"
 #include "sound.h"
 #include "timer.h"
-
+#include "cli.h"
 
 int main(int argc, char** argv) {
-	if (argc != 3) {
-		fprintf(stderr, "Usage: ./cretro <DELAY> <ROM>\n");
+    config_t conf = cli_config_default();
+
+	if (cli_config_handle(&conf, argc, argv))
         return EXIT_FAILURE;
-	}
-	
+
 	machine_init();
 
-    long inputDelay = strtol(argv[1], NULL, 10);
-    if (inputDelay > UINT16_MAX) {
-        fprintf(stderr, "Provided delay %ld is higher than allowed delay %d\n", inputDelay, UINT16_MAX);
-        return EXIT_FAILURE;
-    }
-	const uint16_t DELAY = (uint16_t) inputDelay;
-	const char* ROM_FILE_NAME = argv[2];
-
-	rom_load(ROM_FILE_NAME);
+	rom_load(conf.rom);
 	printf("Successfully initialized ROM\n");
 
 	if (lcd_init()) {
@@ -53,7 +45,7 @@ int main(int argc, char** argv) {
 		struct timeval clock_now;
 	    gettimeofday(&clock_now, NULL);
 		long dt = timediff_ms(&clock_now, &cpu_clock_prev);
-		if (dt > DELAY) {
+		if (dt > conf.delay) {
 			if (cpu_step() || lcd_step(m.video, videoPitch)) {
 				break;
 			}
