@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <sys/time.h>
 #include <pthread.h>
+#include <stdbool.h>
 
 #include "lcd.h"
 #include "cpu.h"
@@ -28,8 +29,7 @@ int main(int argc, char** argv) {
 	rom_load(ROM_FILE_NAME);
 	printf("Successfully initialized ROM\n");
 
-	uint8_t ret = lcd_init();
-	if (ret) {
+	if (lcd_init()) {
 		fprintf(stderr, "Failed to initialize LCD\n");
 		exit(-3);
 	}
@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
 	pthread_t tid;
 	pthread_create(&tid, NULL, &timer_update_callback, NULL);
 
-	uint8_t running = 1;
+	bool running = true;
 	while (running) {
 		running = lcd_process_input();
 
