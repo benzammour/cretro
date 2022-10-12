@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
 
 	machine_init();
 
-	rom_load(conf->rom);
+	rom_load(conf->rom_path);
 	printf("Successfully initialized ROM\n");
 
     lcd_init();

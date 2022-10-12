@@ -14,7 +14,7 @@ __attribute__((__const__)) config_t* cli_config_default(void) {
 
     conf->debug = false;
     conf->us_delay = 0;
-    conf->rom = "";
+    conf->rom_path = "";
 
     return conf;
 }
@@ -51,7 +51,7 @@ int cli_config_handle(config_t* const conf, int argc, char **argv) {
     conf->us_delay = (uint32_t) (hertz / MAX_HZ);
 
     // path to rom
-    conf->rom = argv[optind++];
+    conf->rom_path = argv[optind++];
 
     return EXIT_SUCCESS;
 }
