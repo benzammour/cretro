@@ -9,14 +9,18 @@
 
 static const char* usage_str = "";
 
-__attribute__((__const__)) config_t cli_config_default(void) {
-    config_t conf = {
-        .debug = false,
-        .us_delay = 0,
-        .rom = "",
-    };
+__attribute__((__const__)) config_t* cli_config_default(void) {
+    config_t* conf = malloc(sizeof(config_t));
+
+    conf->debug = false;
+    conf->us_delay = 0;
+    conf->rom = "";
 
     return conf;
+}
+
+void cli_config_destroy(config_t *conf) {
+    free(conf);
 }
 
 int cli_config_handle(config_t* const conf, int argc, char **argv) {

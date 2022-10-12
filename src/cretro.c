@@ -11,14 +11,14 @@
 #include "cli.h"
 
 int main(int argc, char** argv) {
-    config_t conf = cli_config_default();
+    config_t* conf = cli_config_default();
 
-	if (cli_config_handle(&conf, argc, argv))
+	if (cli_config_handle(conf, argc, argv))
         return EXIT_FAILURE;
 
 	machine_init();
 
-	rom_load(conf.rom);
+	rom_load(conf->rom);
 	printf("Successfully initialized ROM\n");
 
     lcd_init();
@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
 		struct timeval clock_now;
 	    gettimeofday(&clock_now, NULL);
 		long dt = timediff_us(&clock_now, &cpu_clock_prev);
-		if (dt > conf.us_delay) {
+		if (dt > conf->us_delay) {
 			cpu_step();
 			lcd_step(m.video, videoPitch);
 			cpu_clock_prev = clock_now;
@@ -50,6 +50,7 @@ int main(int argc, char** argv) {
 	}
 
 	SDL_Quit();
+    cli_config_destroy(conf);
 
     return EXIT_SUCCESS;
 }

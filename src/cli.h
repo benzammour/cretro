@@ -19,7 +19,9 @@ typedef struct config {
     const char* rom;
 } config_t;
 
-config_t cli_config_default(void);
+config_t* cli_config_default(void);
+
+void cli_config_destroy(config_t* conf);
 
 int cli_config_handle(config_t* const conf, int argc, char **argv);
 
