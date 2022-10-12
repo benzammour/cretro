@@ -1,7 +1,10 @@
 #include "cli.h"
+#include "debug.h"
 
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
+#include <limits.h>
 #include <getopt.h>
 #include <stdio.h>
 
@@ -11,8 +14,8 @@ static const char* usage_str = "";
 
 __attribute__((__const__)) config_t cli_config_default(void) {
     config_t conf = {
-        .debug = false,
-        .us_delay = 0,
+        .debug = 0,
+        .us_delay = -1,
         .rom = "",
     };
 
@@ -23,10 +26,11 @@ int cli_config_handle(config_t* const conf, int argc, char **argv) {
     int c;
 
     // parse all options first
-    while ((c = getopt(argc, argv, "d")) != -1) {
+    while ((c = getopt(argc, argv, "d:")) != -1) {
         switch (c) {
             case 'd':
-                conf->debug = true;
+                conf->debug = (int) strtol(optarg, NULL, 10);
+                debug_init(conf);
                 break;
             default:
                 fprintf(stderr, "%s\n", usage_str);
@@ -34,20 +38,43 @@ int cli_config_handle(config_t* const conf, int argc, char **argv) {
         }
     }
 
-    // parse the remaining options
+    // parse the remaining options: <HERTZ> <ROM>
 
     // calculate delay from hertz input
     long hertz = strtol(argv[optind++], NULL, 10);
+    LOG_DEBUG("Delay [Hz] input specified: %ld.", hertz);
+
     if (hertz > MAX_HZ) {
-        fprintf(stderr, "Provided delay %ld is higher than allowed delay %ld\n", hertz, MAX_HZ);
+        LOG_FATAL("Provided delay %ld is higher than allowed delay %ld", hertz, MAX_HZ);
+        return EXIT_FAILURE;
+    }
+    else if (hertz <= 0) {
+        LOG_FATAL("Provided delay %ld is lower or equal to 0", hertz);
         return EXIT_FAILURE;
     }
 
     // delay
-    conf->us_delay = (uint32_t) (hertz / MAX_HZ);
+    if (optind >= argc) {
+        LOG_FATAL("No delay [Hz] has been specified!");
+        return EXIT_FAILURE;
+    }
+
+    long delay = MAX_HZ / hertz;
+    if (delay > INT_MAX) {
+        LOG_FATAL("Delay is out of bounds: %d > %d", delay, INT_MAX);
+        return EXIT_FAILURE;
+    }
+
+    conf->us_delay = (int) (delay);
+    LOG_INFO("Delay set to %d us.", conf->us_delay);
 
     // path to rom
+    if (optind >= argc) {
+        LOG_FATAL("No ROM path specified!");
+        return EXIT_FAILURE;
+    }
     conf->rom = argv[optind++];
+    LOG_DEBUG("Path to ROM: %s", conf->rom);
 
     return EXIT_SUCCESS;
 }
