@@ -4,14 +4,18 @@
 
 #include "debug.h"
 
-static debug_level_t min_dbg_lvl = info;
+static debug_level_t min_dbg_lvl = fatal;
 
 void debug_init(const config_t* conf) {
     min_dbg_lvl = conf->debug;
 
-    // cap debug level, we want to see fatal errors at all times
+    // minimum debug level cannot be higher than fatal
     if (min_dbg_lvl > fatal)
         min_dbg_lvl = fatal;
+
+    // minimum debug level cannot be lower than debug
+    if (min_dbg_lvl < debug)
+        min_dbg_lvl = debug;
 
     LOG_INFO("Log level initialized to %d.", min_dbg_lvl);
 }
