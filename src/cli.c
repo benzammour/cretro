@@ -10,7 +10,7 @@
 
 #define MAX_HZ (1000000L)
 
-static const char* usage_str = "";
+static const char* usage_str = "cretro [-d <0..5>] <HERTZ> <ROM>";
 
 __attribute__((__const__)) config_t cli_config_default(void) {
     config_t conf = {

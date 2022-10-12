@@ -9,6 +9,7 @@
 #include "sound.h"
 #include "timer.h"
 #include "cli.h"
+#include "debug.h"
 
 int main(int argc, char** argv) {
     config_t conf = cli_config_default();
@@ -19,10 +20,10 @@ int main(int argc, char** argv) {
 	machine_init();
 
 	rom_load(conf.rom);
-	printf("Successfully initialized ROM\n");
+	LOG_INFO("Successfully initialized ROM");
 
     lcd_init();
-	printf("Successfully initialized LCD\n");
+	LOG_INFO("Successfully initialized LCD");
 
 	int videoPitch = sizeof(m.video[0]) * VIDEO_WIDTH;
 
