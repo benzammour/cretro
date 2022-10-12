@@ -15,7 +15,7 @@
 
 typedef struct config {
     bool debug;
-    uint16_t delay;
+    uint32_t us_delay;
     const char* rom;
 } config_t;
 

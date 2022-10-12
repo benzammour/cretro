@@ -3,6 +3,26 @@
 #include "cpu.h"
 #include "sound.h"
 
+#define FONTSET_SIZE 80
+#define FONTSET_START_ADDRESS 0x00
+#define START_ADDRESS 0x200
+
+#define GET_X(opcode) ((uint8_t) ((opcode >> 8) & 0x000F))
+#define GET_Y(opcode) ((uint8_t) ((opcode >> 4) & 0x000F))
+#define GET_N(opcode) ((uint8_t) (opcode & 0x000F))
+#define GET_KK(opcode) ((uint8_t) (opcode & 0x00FF))
+#define GET_NNN(opcode) ((uint16_t) (opcode & 0x0FFF))
+
+typedef void (*op_function)(void);
+
+// Function is used for instruction array initialization, not recognized by compiler
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+static void ILLEGAL_OPCODE(void) {
+	fprintf(stderr, "Unallowed OP Code!\n");
+}
+#pragma GCC diagnostic pop
+
 op_function instr_lookup[0xF + 1] = { [0 ... 0xF] = ILLEGAL_OPCODE };
 op_function zero_prefixed_lookup[0xE + 1] = { [0 ... 0xE] = ILLEGAL_OPCODE };
 op_function eight_prefixed_lookup[0xE + 1] = { [0 ... 0xE] = ILLEGAL_OPCODE };
@@ -81,14 +101,6 @@ void rom_load(const char *filename) {
 	fclose(f);
 }
 
-// Function is used for instruction array initialization, not recognized by compiler
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
-void ILLEGAL_OPCODE(void) {
-    printf("Unallowed OP Code!\n");
-}
-#pragma GCC diagnostic pop
-
 static void ZERO_PREFIXED(void) {
 	zero_prefixed_lookup[GET_N(m.opcode)]();
 }
@@ -158,7 +170,7 @@ void machine_init(void) {
 	f_prefixed_lookup[0x65] = OPC_Fx65;
 }
 
-uint8_t cpu_step(void) {
+void cpu_step(void) {
 	// Get opcode and increment PC
 	m.opcode = (m.memory[m.PC] << 8) | m.memory[m.PC + 1];
 
@@ -166,8 +178,6 @@ uint8_t cpu_step(void) {
 
 	// Get and Execute Instruction 
 	(*(instr_lookup[(m.opcode & 0xF000) >> 12]))();
-
-	return 0;
 }
 
 // OP-Codes:
@@ -341,28 +351,26 @@ void OPC_Cxkk(void) {
 }
 
 void OPC_Dxyn(void) {
-	uint8_t Vx = (m.opcode & 0x0F00u) >> 8u;
-	uint8_t Vy = (m.opcode & 0x00F0u) >> 4u;
-	uint8_t height = m.opcode & 0x000Fu;
+	uint_fast8_t Vx = (m.opcode & 0x0F00u) >> 8u;
+	uint_fast8_t Vy = (m.opcode & 0x00F0u) >> 4u;
+	uint_fast8_t height = m.opcode & 0x000Fu;
 
 	// Wrap if going beyond screen boundaries
-	uint8_t vxValue = m.registers[Vx] % VIDEO_WIDTH;
-	uint8_t vyValue = m.registers[Vy] % VIDEO_HEIGHT;
-    //uint8_t vxValue = FAST_MODULO(m.registers[Vx], VIDEO_WIDTH);
-    //uint8_t vyValue = FAST_MODULO(m.registers[Vy], VIDEO_HEIGHT);
+	uint_fast8_t vxValue = m.registers[Vx] % VIDEO_WIDTH;
+	uint_fast8_t vyValue = m.registers[Vy] % VIDEO_HEIGHT;
 
 	m.registers[0xF] = 0;
 
-	for (uint8_t row = 0; row < height; ++row) {
-		uint8_t spritePixel = m.memory[m.index + row];
+	for (uint_fast8_t row = 0; row < height; ++row) {
+		uint_fast8_t spritePixel = m.memory[m.index + row];
 
-		for (uint8_t col = 0; col < 8; ++col) {
-			uint8_t bit = spritePixel & (0b10000000 >> col);
+		for (uint_fast8_t col = 0; col < 8; ++col) {
+			uint_fast8_t bit = spritePixel & (0b10000000 >> col);
 			uint32_t* pixel = &m.video[(vyValue + row) * VIDEO_WIDTH + (vxValue + col)];
 
 			// Sprite pixel is set
 			if (bit) {
-				if (*pixel == 0xFFFFFFFF) {	// pixel on screen => set carry bit
+				if (*pixel == 0xFFFFFFFF) {	// pixel on screen => set carry/collision bit
 					m.registers[0xF] = 1;
 				}
 

@@ -5,12 +5,14 @@
 #include <getopt.h>
 #include <stdio.h>
 
+#define MAX_HZ (1000000L)
+
 static const char* usage_str = "";
 
 __attribute__((__const__)) config_t cli_config_default(void) {
     config_t conf = {
         .debug = false,
-        .delay = 0,
+        .us_delay = 0,
         .rom = "",
     };
 
@@ -33,14 +35,16 @@ int cli_config_handle(config_t* const conf, int argc, char **argv) {
     }
 
     // parse the remaining options
-    long delay = strtol(argv[optind++], NULL, 10);
-    if (delay > UINT16_MAX) {
-        fprintf(stderr, "Provided delay %ld is higher than allowed delay %d\n", delay, UINT16_MAX);
+
+    // calculate delay from hertz input
+    long hertz = strtol(argv[optind++], NULL, 10);
+    if (hertz > MAX_HZ) {
+        fprintf(stderr, "Provided delay %ld is higher than allowed delay %ld\n", hertz, MAX_HZ);
         return EXIT_FAILURE;
     }
 
     // delay
-    conf->delay = (uint16_t)delay;
+    conf->us_delay = (uint32_t) (hertz / MAX_HZ);
 
     // path to rom
     conf->rom = argv[optind++];

@@ -1,42 +1,23 @@
 #ifndef CPU_H
 #define CPU_H
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
 
-#define FONTSET_SIZE 80
-#define FONTSET_START_ADDRESS 0x00
-#define START_ADDRESS 0x200
 #define MEMORY_SIZE 4096
 #define REGISTER_COUNT 16
 #define STACK_LEVELS 16
-#define SCALE_FACTOR 100
+#define KEY_SIZE 16
 #define VIDEO_HEIGHT 32
 #define VIDEO_WIDTH 64
-#define KEY_SIZE 16
-#define SCREEN_DIMENSIONS VIDEO_WIDTH * VIDEO_HEIGHT
-
-#define GET_X(opcode) ((uint8_t) ((opcode >> 8) & 0x000F))
-#define GET_Y(opcode) ((uint8_t) ((opcode >> 4) & 0x000F))
-#define GET_N(opcode) ((uint8_t) (opcode & 0x000F))
-#define GET_KK(opcode) ((uint8_t) (opcode & 0x00FF))
-#define GET_NNN(opcode) ((uint16_t) (opcode & 0x0FFF))
-
-// NOTE: This only works when y is a power of two
-#define FAST_MODULO(x, y) (x & (y - 1))
-
+#define SCREEN_DIMENSIONS (VIDEO_WIDTH * VIDEO_HEIGHT)
 
 void rom_load(const char *filename);
-uint8_t *get_rom_bytes(void);
-
 void machine_init(void);
-uint16_t cpu_get_cycle_count(void);
-uint8_t cpu_step(void);
-
-// Do nothing
-void ILLEGAL_OPCODE(void);
+void cpu_step(void);
 
 typedef struct machine_t {
 	uint8_t memory[MEMORY_SIZE];
@@ -56,8 +37,6 @@ typedef struct machine_t {
 } machine_t;
 
 extern machine_t m;
-
-typedef void (*op_function)(void);
 
 // Clear the display
 void OPC_00E0(void);
@@ -161,6 +140,5 @@ void OPC_Fx55(void);
 
 // Fx65 - LD Vx, [I]: Fills V0 to VX with values from memory starting at address I. I is then set to I + x + 1
 void OPC_Fx65(void);
-
 
 #endif

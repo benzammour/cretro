@@ -21,10 +21,7 @@ int main(int argc, char** argv) {
 	rom_load(conf.rom);
 	printf("Successfully initialized ROM\n");
 
-	if (lcd_init()) {
-		fprintf(stderr, "Failed to initialize LCD\n");
-		exit(-3);
-	}
+    lcd_init();
 	printf("Successfully initialized LCD\n");
 
 	int videoPitch = sizeof(m.video[0]) * VIDEO_WIDTH;
@@ -37,19 +34,17 @@ int main(int argc, char** argv) {
 	pthread_create(&tid, NULL, &timer_update_callback, NULL);
 
 	bool running = true;
-	while (running) {
+    while (running) {
 		running = lcd_process_input();
 
 		handle_sound();
 
 		struct timeval clock_now;
 	    gettimeofday(&clock_now, NULL);
-		long dt = timediff_ms(&clock_now, &cpu_clock_prev);
-		if (dt > conf.delay) {
-			if (cpu_step() || lcd_step(m.video, videoPitch)) {
-				break;
-			}
-
+		long dt = timediff_us(&clock_now, &cpu_clock_prev);
+		if (dt > conf.us_delay) {
+			cpu_step();
+			lcd_step(m.video, videoPitch);
 			cpu_clock_prev = clock_now;
 		}
 	}

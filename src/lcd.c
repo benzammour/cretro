@@ -4,10 +4,10 @@
 #include "lcd.h"
 
 static SDL_Window *window;
-SDL_Renderer *renderer;
-SDL_Texture *texture;
+static SDL_Renderer *renderer;
+static SDL_Texture *texture;
 
-uint8_t lcd_init(void) {
+void lcd_init(void) {
 	SDL_Init(SDL_INIT_EVERYTHING);
 
 	window = SDL_CreateWindow(
@@ -20,8 +20,62 @@ uint8_t lcd_init(void) {
 
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 64, 32);
+}
 
-	return 0;
+static void process_key(const SDL_Event *e, bool value) {
+	switch (e->key.keysym.sym) {
+		case SDLK_x:
+			m.keys[0] = value;
+			break;
+		case SDLK_1:
+			m.keys[1] = value;
+			break;
+		case SDLK_2:
+			m.keys[2] = value;
+			break;
+		case SDLK_3:
+			m.keys[3] = value;
+			break;
+		case SDLK_q:
+			m.keys[4] = value;
+			break;
+		case SDLK_w:
+			m.keys[5] = value;
+			break;
+		case SDLK_e:
+			m.keys[6] = value;
+			break;
+		case SDLK_a:
+			m.keys[7] = value;
+			break;
+		case SDLK_s:
+			m.keys[8] = value;
+			break;
+		case SDLK_d:
+			m.keys[9] = value;
+			break;
+		case SDLK_y:
+			m.keys[0xA] = value;
+			break;
+		case SDLK_c:
+			m.keys[0xB] = value;
+			break;
+		case SDLK_4:
+			m.keys[0xC] = value;
+			break;
+		case SDLK_r:
+			m.keys[0xD] = value;
+			break;
+		case SDLK_f:
+			m.keys[0xE] = value;
+			break;
+		case SDLK_v:
+			m.keys[0xF] = value;
+			break;
+		default:
+			// Ignore unknown keys
+			break;
+	}
 }
 
 bool lcd_process_input(void) {
@@ -34,117 +88,14 @@ bool lcd_process_input(void) {
 			running = SDL_FALSE;
 			break;
 		case SDL_KEYDOWN:
-			switch (e.key.keysym.sym) {
-				case SDLK_ESCAPE:
-					running = SDL_FALSE;
-					break;
-				case SDLK_x:
-					m.keys[0] = 1;
-					break;
-				case SDLK_1:
-					m.keys[1] = 1;
-					break;
-				case SDLK_2:
-					m.keys[2] = 1;
-					break;
-				case SDLK_3:
-					m.keys[3] = 1;
-					break;
-				case SDLK_q:
-					m.keys[4] = 1;
-					break;
-				case SDLK_w:
-					m.keys[5] = 1;
-					break;
-				case SDLK_e:
-					m.keys[6] = 1;
-					break;
-				case SDLK_a:
-					m.keys[7] = 1;
-					break;
-				case SDLK_s:
-					m.keys[8] = 1;
-					break;
-				case SDLK_d:
-					m.keys[9] = 1;
-					break;
-				case SDLK_y:
-					m.keys[0xA] = 1;
-					break;
-				case SDLK_c:
-					m.keys[0xB] = 1;
-					break;
-				case SDLK_4:
-					m.keys[0xC] = 1;
-					break;
-				case SDLK_r:
-					m.keys[0xD] = 1;
-					break;
-				case SDLK_f:
-					m.keys[0xE] = 1;
-					break;
-				case SDLK_v:
-					m.keys[0xF] = 1;
-					break;
-                default:
-                    // Ignore unknown keys
-                    break;
+			if (e.key.keysym.sym == SDLK_ESCAPE) {
+				running = SDL_FALSE;
+				break;
 			}
+			process_key(&e, 1);
 			break;
 		case SDL_KEYUP:
-			switch (e.key.keysym.sym) {
-				case SDLK_x:
-					m.keys[0] = 0;
-					break;
-				case SDLK_1:
-					m.keys[1] = 0;
-					break;
-				case SDLK_2:
-					m.keys[2] = 0;
-					break;
-				case SDLK_3:
-					m.keys[3] = 0;
-					break;
-				case SDLK_q:
-					m.keys[4] = 0;
-					break;
-				case SDLK_w:
-					m.keys[5] = 0;
-					break;
-				case SDLK_e:
-					m.keys[6] = 0;
-					break;
-				case SDLK_a:
-					m.keys[7] = 0;
-					break;
-				case SDLK_s:
-					m.keys[8] = 0;
-					break;
-				case SDLK_d:
-					m.keys[9] = 0;
-					break;
-				case SDLK_y:
-					m.keys[0xA] = 0;
-					break;
-				case SDLK_c:
-					m.keys[0xB] = 0;
-					break;
-				case SDLK_4:
-					m.keys[0xC] = 0;
-					break;
-				case SDLK_r:
-					m.keys[0xD] = 0;
-					break;
-				case SDLK_f:
-					m.keys[0xE] = 0;
-					break;
-				case SDLK_v:
-					m.keys[0xF] = 0;
-					break;
-                default:
-                    // Ignore unknown keys
-                    break;
-		}
+			process_key(&e, 0);
 			break;
         default:
             // Ignore unknown key events
@@ -155,12 +106,10 @@ bool lcd_process_input(void) {
 	return running;
 }
 
-uint8_t lcd_step(void const *buffer, int pitch) {
+void lcd_step(const void *buffer, int pitch) {
 	SDL_UpdateTexture(texture, NULL, buffer, pitch);
 	SDL_SetTextureColorMod(texture, 69, 170, 242);
 	SDL_RenderClear(renderer);
 	SDL_RenderCopy(renderer, texture, NULL, NULL);
 	SDL_RenderPresent(renderer);
-
-	return 0;
 }
