@@ -4,7 +4,7 @@
 
 #include "debug.h"
 
-static debug_level_t min_dbg_lvl = fatal;
+static debug_level_t min_dbg_lvl = info;
 
 void debug_init(const config_t* conf) {
     min_dbg_lvl = conf->debug;
@@ -22,6 +22,7 @@ __attribute__((format(printf, 2, 3))) void _log_str(debug_level_t dbg_lvl, const
     va_list args;
     time_t rawtime;
     struct tm * timeinfo;
+    FILE* stream;
 
     va_start(args, msg);
     time(&rawtime);
@@ -33,24 +34,30 @@ __attribute__((format(printf, 2, 3))) void _log_str(debug_level_t dbg_lvl, const
     switch (dbg_lvl) {
         case debug:
             dbg_lvl_str = "DEBUG";
+            stream = stdout;
             break;
         case info:
             dbg_lvl_str = "INFO";
+            stream = stdout;
             break;
         case warning:
             dbg_lvl_str = "WARNING";
+            stream = stdout;
             break;
         case error:
             dbg_lvl_str = "ERROR";
+            stream = stderr;
             break;
         case fatal:
             dbg_lvl_str = "FATAL";
+            stream = stderr;
             break;
         default:
+            stream = stderr;
             break;
     }
-    printf("%10s – %s – ", dbg_lvl_str, time_str);
-    vprintf(msg, args);
-    printf("\n");
+    fprintf(stream, "%10s – %s – ", dbg_lvl_str, time_str);
+    vfprintf(stream, msg, args);
+    fprintf(stream, "\n");
 
 }
