@@ -23,7 +23,7 @@ static log_level min_dbg_lvl = FATAL;
  ******************************************************/
 
 void log_set_lvl(const arg_conf* conf) {
-    min_dbg_lvl = conf->debug;
+    min_dbg_lvl = (log_level) conf->debug;
 
     // minimum debug level cannot be higher than fatal
     if (min_dbg_lvl > FATAL)
