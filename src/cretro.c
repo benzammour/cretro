@@ -14,8 +14,10 @@
 int main(int argc, char** argv) {
     arg_conf* conf = cli_config_default();
 
-	if (cli_config_handle(conf, argc, argv))
+	if (cli_config_handle(conf, argc, argv)) {
+        cli_config_destroy(conf);
         return EXIT_FAILURE;
+    }
 
 	machine_init();
 
