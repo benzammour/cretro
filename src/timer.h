@@ -9,7 +9,6 @@
 #include "cpu.h"
 #include "sound.h"
 
-int nanosleep(const struct timespec *req, struct timespec *rem);
 int msleep(long msec);
 _Noreturn void *timer_update_callback(void* unused);
 __attribute__((pure)) long timediff_us(const struct timeval *end, const struct timeval *start);
