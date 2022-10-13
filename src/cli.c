@@ -25,6 +25,11 @@ __attribute__((__const__)) config_t cli_config_default(void) {
 int cli_config_handle(config_t* const conf, int argc, char **argv) {
     int c;
 
+    if (argc < 3) {
+        fprintf(stderr, "%s\n", usage_str);
+        return EXIT_FAILURE;
+    }
+
     // parse all options first
     while ((c = getopt(argc, argv, "d:")) != -1) {
         switch (c) {
