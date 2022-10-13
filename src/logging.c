@@ -4,7 +4,24 @@
 
 #include "logging.h"
 
+
+/******************************************************
+ *** LOCAL DEFINES                                  ***
+ ******************************************************/
+
+/******************************************************
+ *** LOCAL VARIABLES                                ***
+ ******************************************************/
+
 static log_level_t min_dbg_lvl = FATAL;
+
+/******************************************************
+ *** LOCAL METHODS                                  ***
+ ******************************************************/
+
+/******************************************************
+ *** EXPOSED METHODS                                ***
+ ******************************************************/
 
 void log_init(const config_t* conf) {
     min_dbg_lvl = conf->debug;
@@ -20,7 +37,7 @@ void log_init(const config_t* conf) {
     LOG_INFO("Log level initialized to %d.", min_dbg_lvl);
 }
 
-__attribute__((format(printf, 2, 3))) void _log_str(log_level_t dbg_lvl, const char *msg, ...) {
+__attribute__((format(printf, 2, 3))) void log_str(log_level_t dbg_lvl, const char *msg, ...) {
     if (dbg_lvl < min_dbg_lvl) return;
 
     va_list args;

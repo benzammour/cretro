@@ -9,11 +9,23 @@
 #include <stdio.h>
 #include <errno.h>
 
+/******************************************************
+ *** LOCAL DEFINES                                  ***
+ ******************************************************/
+
 #define MAX_HZ (1000000L)
+
+/******************************************************
+ *** LOCAL VARIABLES                                ***
+ ******************************************************/
 
 static const char* usage_str = "cretro [-d <0..5>] [-f <FREQUENCY_HZ>] <ROM>";
 
-static int _save_strtol(const char* str_to_conv, int* store_into) {
+/******************************************************
+ *** LOCAL METHODS                                  ***
+ ******************************************************/
+
+static int save_strtol(const char* str_to_conv, int* store_into) {
     char* end;
     const long strtol_in = strtol(str_to_conv, &end, 10);
 
@@ -37,7 +49,7 @@ static int _save_strtol(const char* str_to_conv, int* store_into) {
     return EXIT_FAILURE;
 }
 
-static void _handle_arg_frequency(config_t* conf, long frequency) {
+static void handle_arg_frequency(config_t* conf, long frequency) {
     // calculate delay from hertz input
     LOG_DEBUG("Frequency [Hz] input specified: %ld.", frequency);
 
@@ -57,6 +69,10 @@ static void _handle_arg_frequency(config_t* conf, long frequency) {
     conf->us_delay = (int) (delay);
     LOG_INFO("Delay set to %d us.", conf->us_delay);
 }
+
+/******************************************************
+ *** EXPOSED METHODS                                ***
+ ******************************************************/
 
 config_t* cli_config_default(void) {
     config_t* conf = malloc(sizeof(config_t));
@@ -85,17 +101,17 @@ int cli_config_handle(config_t* const conf, int argc, char **argv) {
     while ((c = getopt(argc, argv, "d:f:")) != -1) {
         switch (c) {
             case 'd':
-                if (_save_strtol(optarg, &strtol_in))
+                if (save_strtol(optarg, &strtol_in))
                     return EXIT_FAILURE;
 
                 conf->debug = strtol_in;
                 log_init(conf);
                 break;
             case 'f':
-                if (_save_strtol(optarg, &strtol_in))
+                if (save_strtol(optarg, &strtol_in))
                     return EXIT_FAILURE;
 
-                _handle_arg_frequency(conf, strtol_in);
+                handle_arg_frequency(conf, strtol_in);
                 break;
             default:
                 fprintf(stderr, "%s\n", usage_str);
