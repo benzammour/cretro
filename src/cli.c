@@ -42,20 +42,20 @@ int cli_config_handle(config_t* const conf, int argc, char **argv) {
 
     // calculate delay from hertz input
     long hertz = strtol(argv[optind++], NULL, 10);
-    LOG_DEBUG("Delay [Hz] input specified: %ld.", hertz);
+    LOG_DEBUG("Frequency [Hz] input specified: %ld.", hertz);
 
     if (hertz > MAX_HZ) {
-        LOG_FATAL("Provided delay %ld is higher than allowed delay %ld", hertz, MAX_HZ);
+        LOG_FATAL("Provided frequency %ld is higher than allowed frequency %ld", hertz, MAX_HZ);
         return EXIT_FAILURE;
     }
     else if (hertz <= 0) {
-        LOG_FATAL("Provided delay %ld is lower or equal to 0", hertz);
+        LOG_FATAL("Provided frequency %ld is lower or equal to 0", hertz);
         return EXIT_FAILURE;
     }
 
     // delay
     if (optind >= argc) {
-        LOG_FATAL("No delay [Hz] has been specified!");
+        LOG_FATAL("No frequency [Hz] has been specified!");
         return EXIT_FAILURE;
     }
 
