@@ -8,7 +8,6 @@ project(
     LANGUAGES C
 )
 
-set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_COMPILER gcc)
 
 set(INSTALL_PATH ~/.local/bin/${PRODUCT_NAME})
@@ -104,6 +103,7 @@ add_executable(
     ${PRODUCT_NAME}
     ${SOURCE_FILES}
 )
+set_property(TARGET ${TARGET_NAME} PROPERTY C_STANDARD 17)
 
 target_link_libraries(${PRODUCT_NAME} PUBLIC -lm -lSDL2 -pthread)
 
