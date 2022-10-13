@@ -1,12 +1,3 @@
-/**
- *
- * @file	cli.h
- * @brief 	Header defining stuff for command line argument parsing
- * @author 	Moritz R. Huellmann
- * @date 	10.10.22
- *
- */
-
 #ifndef _CRETRO_SRC_CLI_H_
 #define _CRETRO_SRC_CLI_H_
 
