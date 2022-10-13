@@ -20,7 +20,7 @@ typedef void (*op_function)(void);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
 static void ILLEGAL_OPCODE(void) {
-	LOG_ERROR("Unallowed OP Code!\n");
+	LOG_ERROR("Unallowed OP Code!");
 }
 #pragma GCC diagnostic pop
 
@@ -73,7 +73,7 @@ void rom_load(const char *filename) {
     LOG_INFO("Loading ROM %s", filename);
     f = fopen(filename, "r");
 	if (f == NULL) {
-        LOG_FATAL("%s\n", strerror(errno));
+        LOG_FATAL("%s", strerror(errno));
         return;
 	}
 
@@ -84,11 +84,11 @@ void rom_load(const char *filename) {
     LOG_DEBUG("Size of ROM: %ld", romSize);
 
     if (romSize < 0) {
-        LOG_FATAL("%s\n", strerror(errno));
+        LOG_FATAL("%s", strerror(errno));
         fclose(f);
         return;
     } else if (((unsigned long) romSize) >= UINT16_MAX) {
-        LOG_FATAL("Size of rom %s (%ld) is larger than maximal allowed size %d\n", filename, romSize, UINT16_MAX);
+        LOG_FATAL("Size of rom %s (%ld) is larger than maximal allowed size %d", filename, romSize, UINT16_MAX);
         fclose(f);
         return;
     }
@@ -98,7 +98,7 @@ void rom_load(const char *filename) {
 
 	size_t bytesRead = fread(&m.memory[START_ADDRESS], sizeof(uint8_t), (size_t) romSize, f);
     if (bytesRead != (size_t) romSize) {
-        LOG_FATAL("An error occurred while reading bytes from rom\n");
+        LOG_FATAL("An error occurred while reading bytes from rom");
         fclose(f);
         return;
     }
