@@ -92,6 +92,7 @@ int cli_config_handle(arg_conf* const conf, int argc, char **argv) {
     int c;
 
     if (argc < 2) {
+        LOG_FATAL("No ROM path specified!");
         fprintf(stderr, "%s\n", usage_str);
         return EXIT_FAILURE;
     }
@@ -121,19 +122,19 @@ int cli_config_handle(arg_conf* const conf, int argc, char **argv) {
 
     // parse the remaining options
 
-    // calculate delay from hertz input
-
-    // delay
-    if (optind >= argc) {
-        LOG_FATAL("No frequency [Hz] has been specified!");
+    if (argc - optind > 1) {
+        LOG_FATAL("You provided too many arguments!");
+        fprintf(stderr, "%s\n", usage_str);
         return EXIT_FAILURE;
     }
 
-    // path to rom
     if (optind >= argc) {
         LOG_FATAL("No ROM path specified!");
+        fprintf(stderr, "%s\n", usage_str);
         return EXIT_FAILURE;
     }
+
+    // path to rom is the only remaining argument
     conf->rom_path = argv[optind++];
     LOG_DEBUG("Path to ROM: %s", conf->rom_path);
 
