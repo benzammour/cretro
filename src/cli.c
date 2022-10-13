@@ -25,7 +25,7 @@ static const char* usage_str = "cretro [-d <0..4>] [-f <FREQUENCY_HZ>] <ROM>";
  *** LOCAL METHODS                                  ***
  ******************************************************/
 
-static int save_strtol(const char* str_to_conv, int* store_into) {
+static int safe_strtol(const char* str_to_conv, int* store_into) {
     char* end;
     const long strtol_in = strtol(str_to_conv, &end, 10);
 
@@ -101,14 +101,14 @@ int cli_config_handle(arg_conf* const conf, int argc, char **argv) {
     while ((c = getopt(argc, argv, "d:f:")) != -1) {
         switch (c) {
             case 'd':
-                if (save_strtol(optarg, &strtol_in))
+                if (safe_strtol(optarg, &strtol_in))
                     return EXIT_FAILURE;
 
                 conf->debug = strtol_in;
                 log_set_lvl(conf);
                 break;
             case 'f':
-                if (save_strtol(optarg, &strtol_in))
+                if (safe_strtol(optarg, &strtol_in))
                     return EXIT_FAILURE;
 
                 handle_arg_frequency(conf, strtol_in);
