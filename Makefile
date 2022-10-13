@@ -13,7 +13,7 @@ CFLAGS   = -g -std=c17 -Wall -Wextra -Werror -Wunused -Wshadow -Wcast-align -Wco
 
 LINKER	= gcc
 # linking flags here
-LFLAGS	= -Wall -lm -lSDL2
+LFLAGS	= -Wall -lm -lSDL2 -pthread
 
 # change these to proper directories where each file should be
 SRCDIR	= src
