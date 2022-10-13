@@ -2,34 +2,30 @@
 #include <stdint.h>
 #include <sys/time.h>
 #include <pthread.h>
+#include <stdbool.h>
 
 #include "lcd.h"
 #include "cpu.h"
 #include "sound.h"
 #include "timer.h"
-
+#include "cli.h"
+#include "logging.h"
 
 int main(int argc, char** argv) {
-	if (argc != 3) {
-		fprintf(stderr, "Usage: ./cretro <CPU-FREQUENCY-IN-HZ> <ROM>\n");
-        return EXIT_FAILURE;
-	}
-	
-	machine_init();
+    arg_conf* conf = cli_config_default();
 
-    long inputHertz = strtol(argv[1], NULL, 10);
-    if (inputHertz > 1000000L) {
-        fprintf(stderr, "Provided frequency %ld Hz is higher than allowed frequency %ld Hz\n", inputHertz, 1000000L);
+	if (cli_config_handle(conf, argc, argv)) {
+        cli_config_destroy(conf);
         return EXIT_FAILURE;
     }
-	const uint32_t USECOND_DELAY = (uint32_t) (1000000L / inputHertz);
-	const char* ROM_FILE_NAME = argv[2];
 
-	rom_load(ROM_FILE_NAME);
-	printf("Successfully initialized ROM\n");
+	machine_init();
 
-	lcd_init();
-	printf("Successfully initialized LCD\n");
+	rom_load(conf->rom_path);
+	LOG_INFO("Successfully initialized ROM");
+
+    lcd_init();
+	LOG_INFO("Successfully initialized LCD");
 
 	int videoPitch = sizeof(m.video[0]) * VIDEO_WIDTH;
 
@@ -40,8 +36,8 @@ int main(int argc, char** argv) {
 	pthread_t tid;
 	pthread_create(&tid, NULL, &timer_update_callback, NULL);
 
-	uint8_t running = 1;
-	while (running) {
+	bool running = true;
+    while (running) {
 		running = lcd_process_input();
 
 		handle_sound();
@@ -49,7 +45,7 @@ int main(int argc, char** argv) {
 		struct timeval clock_now;
 	    gettimeofday(&clock_now, NULL);
 		long dt = timediff_us(&clock_now, &cpu_clock_prev);
-		if (dt > USECOND_DELAY) {
+		if (dt > conf->us_delay) {
 			cpu_step();
 			lcd_step(m.video, videoPitch);
 			cpu_clock_prev = clock_now;
@@ -57,6 +53,7 @@ int main(int argc, char** argv) {
 	}
 
 	SDL_Quit();
+    cli_config_destroy(conf);
 
     return EXIT_SUCCESS;
 }

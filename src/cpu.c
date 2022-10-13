@@ -2,6 +2,7 @@
 #include <errno.h>
 #include "cpu.h"
 #include "sound.h"
+#include "logging.h"
 
 #define FONTSET_SIZE 80
 #define FONTSET_START_ADDRESS 0x00
@@ -19,7 +20,7 @@ typedef void (*op_function)(void);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
 static void ILLEGAL_OPCODE(void) {
-	fprintf(stderr, "Unallowed OP Code!\n");
+	LOG_ERROR("Unallowed OP Code!");
 }
 #pragma GCC diagnostic pop
 
@@ -69,21 +70,25 @@ void rom_load(const char *filename) {
 	long romSize;
 
 	// Open ROM
+    LOG_INFO("Loading ROM %s", filename);
     f = fopen(filename, "r");
 	if (f == NULL) {
-        fprintf(stderr, "%s\n", strerror(errno));
+        LOG_FATAL("%s", strerror(errno));
         return;
 	}
 
 	// Get the number of bytes
 	fseek(f, 0L, SEEK_END);
 	romSize = ftell(f);
+
+    LOG_DEBUG("Size of ROM: %ld", romSize);
+
     if (romSize < 0) {
-        fprintf(stderr, "%s\n", strerror(errno));
+        LOG_FATAL("%s", strerror(errno));
         fclose(f);
         return;
     } else if (((unsigned long) romSize) >= UINT16_MAX) {
-        fprintf(stderr, "Size of rom %s (%ld) is larger than maximal allowed size %d\n", filename, romSize, UINT16_MAX);
+        LOG_FATAL("Size of rom %s (%ld) is larger than maximal allowed size %d", filename, romSize, UINT16_MAX);
         fclose(f);
         return;
     }
@@ -93,11 +98,12 @@ void rom_load(const char *filename) {
 
 	size_t bytesRead = fread(&m.memory[START_ADDRESS], sizeof(uint8_t), (size_t) romSize, f);
     if (bytesRead != (size_t) romSize) {
-        fprintf(stderr, "An error occurred while reading bytes from rom\n");
+        LOG_FATAL("An error occurred while reading bytes from rom");
         fclose(f);
         return;
     }
 
+    LOG_DEBUG("Successfully read %ld B of ROM", romSize);
 	fclose(f);
 }
 
