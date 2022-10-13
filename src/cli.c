@@ -19,7 +19,7 @@
  *** LOCAL VARIABLES                                ***
  ******************************************************/
 
-static const char* usage_str = "cretro [-d <0..5>] [-f <FREQUENCY_HZ>] <ROM>";
+static const char* usage_str = "cretro [-d <0..4>] [-f <FREQUENCY_HZ>] <ROM>";
 
 /******************************************************
  *** LOCAL METHODS                                  ***
