@@ -104,8 +104,8 @@ add_executable(
     ${PRODUCT_NAME}
     ${SOURCE_FILES}
 )
-target_link_libraries(${PRODUCT_NAME} PUBLIC -lm -lSDL2 -pthread)
 
+target_link_libraries(${PRODUCT_NAME} PUBLIC -lm -lSDL2 -pthread)
 
 add_custom_target(install-bin COMMAND /bin/sh -c "cp ${PRODUCT_NAME} ${INSTALL_PATH}\; echo 'Installed ${PRODUCT_NAME} at ${INSTALL_PATH}'" DEPENDS ${PRODUCT_NAME})
 add_custom_target(uninstall-bin COMMAND /bin/sh -c "if [[ -f ${INSTALL_PATH} ]]\; then rm ${INSTALL_PATH}\; echo 'Removing ${PRODUCT_NAME} from ${INSTALL_PATH}'\; else echo 'Nothing to uninstall.'\; fi")

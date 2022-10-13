@@ -52,8 +52,16 @@ $ sudo apt install -y build-essential libsdl2-dev make
    ```
 2. Build the Project
    ```bash
-   make
+   mkdir build
+   cd build
+   cmake -G Ninja ..
+   ninja
    ```
+3. Optionally, you can install the resulting binary using
+   ```
+   ninja install-bin
+   ```
+   It can be removed using `ninja uninstall-bin`.
 
 ## Usage
 
