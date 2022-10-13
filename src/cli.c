@@ -7,10 +7,35 @@
 #include <limits.h>
 #include <getopt.h>
 #include <stdio.h>
+#include <errno.h>
 
 #define MAX_HZ (1000000L)
 
 static const char* usage_str = "cretro [-d <0..5>] [-f <FREQUENCY_HZ>] <ROM>";
+
+static int _save_strtol(const char* str_to_conv, int* store_into) {
+    char* end;
+    const long strtol_in = strtol(str_to_conv, &end, 10);
+
+    errno = 0;
+
+    if (end == str_to_conv) {
+        LOG_FATAL("%s: not a decimal number", str_to_conv);
+    } else if ('\0' != *end) {
+        LOG_FATAL("%s: extra characters at end of input: %s", str_to_conv, end);
+    } else if ((LONG_MIN == strtol_in || LONG_MAX == strtol_in) && ERANGE == errno) {
+        LOG_FATAL("%s out of range of type long", str_to_conv);
+    } else if (strtol_in > INT_MAX) {
+        LOG_FATAL("%ld greater than INT_MAX", strtol_in);
+    } else if (strtol_in < INT_MIN) {
+        LOG_FATAL("%ld less than INT_MIN", strtol_in);
+    } else {
+        *store_into = (int)strtol_in;
+        return EXIT_SUCCESS;
+    }
+
+    return EXIT_FAILURE;
+}
 
 static void _handle_arg_frequency(config_t* conf, long frequency) {
     // calculate delay from hertz input
@@ -52,14 +77,21 @@ int cli_config_handle(config_t* const conf, int argc, char **argv) {
     }
 
     // parse all options first
+    int strtol_in;
     while ((c = getopt(argc, argv, "d:f:")) != -1) {
         switch (c) {
             case 'd':
-                conf->debug = (int) strtol(optarg, NULL, 10);
+                if (_save_strtol(optarg, &strtol_in))
+                    return EXIT_FAILURE;
+
+                conf->debug = strtol_in;
                 log_init(conf);
                 break;
             case 'f':
-                _handle_arg_frequency(conf, strtol(optarg, NULL, 10));
+                if (_save_strtol(optarg, &strtol_in))
+                    return EXIT_FAILURE;
+
+                _handle_arg_frequency(conf, strtol_in);
                 break;
             default:
                 fprintf(stderr, "%s\n", usage_str);
