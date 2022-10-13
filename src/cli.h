@@ -1,5 +1,5 @@
-#ifndef _CRETRO_SRC_CLI_H_
-#define _CRETRO_SRC_CLI_H_
+#ifndef CLI_H
+#define CLI_H
 
 #include <stdint.h>
 
@@ -15,4 +15,4 @@ void cli_config_destroy(arg_conf *conf);
 
 int cli_config_handle(arg_conf *const conf, int argc, char **argv);
 
-#endif /* _CRETRO_SRC_CLI_H_ */
+#endif /* CLI_H */

@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
 	lcd_init();
 	LOG_INFO("Successfully initialized LCD");
 
-	int videoPitch = sizeof(m.video[0]) * VIDEO_WIDTH;
+	int video_pitch = sizeof(m.video[0]) * VIDEO_WIDTH;
 
 	struct timeval cpu_clock_prev;
 	gettimeofday(&cpu_clock_prev, NULL);
@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
 		long dt = timediff_us(&clock_now, &cpu_clock_prev);
 		if (dt > conf->us_delay) {
 			cpu_step();
-			lcd_step(m.video, videoPitch);
+			lcd_step(m.video, video_pitch);
 			cpu_clock_prev = clock_now;
 		}
 	}
