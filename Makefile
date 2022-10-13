@@ -13,12 +13,14 @@ CFLAGS   = -g -std=c17 -Wall -Wextra -Werror -Wunused -Wshadow -Wcast-align -Wco
 
 LINKER	= gcc
 # linking flags here
-LFLAGS	= -Wall -lm -lSDL2
+LFLAGS	= -Wall -lm -lSDL2 -pthread
 
 # change these to proper directories where each file should be
 SRCDIR	= src
 OBJDIR	= obj
 BINDIR	= .
+
+INSTALL_PATH = ~/.local/bin/$(TARGET)
 
 SOURCES		:= $(wildcard $(SRCDIR)/*.c)
 INCLUDES	:= $(wildcard $(SRCDIR)/*.h)
@@ -47,3 +49,13 @@ clean:
 remove: clean
 	@$(rm) $(BINDIR)/$(TARGET)
 	@echo "Executable removed!"
+
+.PHONY: install
+install: $(BINDIR)/$(TARGET)
+	@cp $(BINDIR)/$(TARGET) $(INSTALL_PATH)
+	@echo "Installed to "$(INSTALL_PATH)
+
+.PHONY: uninstall
+uninstall:
+	@if [[ -f $(INSTALL_PATH) ]]; then rm $(INSTALL_PATH); echo "Removed binary "$(INSTALL_PATH)"!"; else echo "Nothing to uninstall!"; fi
+
