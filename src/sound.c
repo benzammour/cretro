@@ -1,4 +1,5 @@
 #include "sound.h"
+#include "logging.h"
 
 #define PI 3.14159265358979323846
 #define AMPLITUDE 127
@@ -6,9 +7,9 @@
 
 static void audio_callback(void *user_data, uint8_t *stream, int len) {
     if (len < 0) {
-        fprintf(stderr, "len cannot be negative\n");
+        LOG_FATAL("len cannot be negative");
     } else if (sizeof(int) > sizeof(size_t) && len > SIZE_MAX) {
-        fprintf(stderr, "len %d is larger than allowed %lu\n", len, SIZE_MAX);
+        LOG_FATAL("len %d is larger than allowed %lu", len, SIZE_MAX);
     }
 
     SDL_memset(stream, 0, (size_t) len);
