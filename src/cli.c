@@ -58,14 +58,18 @@ static void _handle_arg_frequency(config_t* conf, long frequency) {
     LOG_INFO("Delay set to %d us.", conf->us_delay);
 }
 
-__attribute__((__const__)) config_t cli_config_default(void) {
-    config_t conf = {
-        .debug = 0,
-        .us_delay = -1,
-        .rom = "",
-    };
+config_t* cli_config_default(void) {
+    config_t* conf = malloc(sizeof(config_t));
+
+    conf->debug = FATAL;
+    conf->us_delay = 0;
+    conf->rom_path = "";
 
     return conf;
+}
+
+void cli_config_destroy(config_t *conf) {
+    free(conf);
 }
 
 int cli_config_handle(config_t* const conf, int argc, char **argv) {
@@ -114,8 +118,8 @@ int cli_config_handle(config_t* const conf, int argc, char **argv) {
         LOG_FATAL("No ROM path specified!");
         return EXIT_FAILURE;
     }
-    conf->rom = argv[optind++];
-    LOG_DEBUG("Path to ROM: %s", conf->rom);
+    conf->rom_path = argv[optind++];
+    LOG_DEBUG("Path to ROM: %s", conf->rom_path);
 
     return EXIT_SUCCESS;
 }
