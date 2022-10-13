@@ -62,3 +62,6 @@ roms/*
 *.c8
 *.code-workspace
 !roms/bat.ch8
+
+# Misc
+compile_commands.json
