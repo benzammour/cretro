@@ -1,5 +1,5 @@
 #include "cli.h"
-#include "debug.h"
+#include "logging.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -30,7 +30,7 @@ int cli_config_handle(config_t* const conf, int argc, char **argv) {
         switch (c) {
             case 'd':
                 conf->debug = (int) strtol(optarg, NULL, 10);
-                debug_init(conf);
+                log_init(conf);
                 break;
             default:
                 fprintf(stderr, "%s\n", usage_str);

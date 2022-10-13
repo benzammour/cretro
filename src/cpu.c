@@ -2,7 +2,7 @@
 #include <errno.h>
 #include "cpu.h"
 #include "sound.h"
-#include "debug.h"
+#include "logging.h"
 
 #define FONTSET_SIZE 80
 #define FONTSET_START_ADDRESS 0x00

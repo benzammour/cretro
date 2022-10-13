@@ -9,7 +9,7 @@
 #include "sound.h"
 #include "timer.h"
 #include "cli.h"
-#include "debug.h"
+#include "logging.h"
 
 int main(int argc, char** argv) {
     config_t conf = cli_config_default();

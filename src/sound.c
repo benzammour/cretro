@@ -1,5 +1,5 @@
 #include "sound.h"
-#include "debug.h"
+#include "logging.h"
 
 #define PI 3.14159265358979323846
 #define AMPLITUDE 127
