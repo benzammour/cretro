@@ -20,6 +20,8 @@ SRCDIR	= src
 OBJDIR	= obj
 BINDIR	= .
 
+INSTALL_PATH = ~/.local/bin/$(TARGET)
+
 SOURCES		:= $(wildcard $(SRCDIR)/*.c)
 INCLUDES	:= $(wildcard $(SRCDIR)/*.h)
 OBJECTS		:= $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
@@ -47,3 +49,13 @@ clean:
 remove: clean
 	@$(rm) $(BINDIR)/$(TARGET)
 	@echo "Executable removed!"
+
+.PHONY: install
+install: $(BINDIR)/$(TARGET)
+	@cp $(BINDIR)/$(TARGET) $(INSTALL_PATH)
+	@echo "Installed to "$(INSTALL_PATH)
+
+.PHONY: uninstall
+uninstall:
+	@if [[ -f $(INSTALL_PATH) ]]; then rm $(INSTALL_PATH); echo "Removed binary "$(INSTALL_PATH)"!"; else echo "Nothing to uninstall!"; fi
+
