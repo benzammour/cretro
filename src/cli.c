@@ -119,7 +119,7 @@ int cli_config_handle(config_t* const conf, int argc, char **argv) {
         }
     }
 
-    // parse the remaining options: <HERTZ> <ROM>
+    // parse the remaining options
 
     // calculate delay from hertz input
 
