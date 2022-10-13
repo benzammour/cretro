@@ -5,17 +5,17 @@
 
 #include "cli.h"
 
-typedef enum {
+typedef enum log_level {
     DEBUG,
     INFO,
     WARNING,
     ERROR,
     FATAL
-} log_level_t;
+} log_level;
 
-void log_str(log_level_t dbg_lvl, const char* dbg_lvl_str, FILE* stream, const char* msg, ...);
+void log_str(log_level dbg_lvl, const char* dbg_lvl_str, FILE* stream, const char* msg, ...);
 
-void log_init(const config_t* conf);
+void log_set_lvl(const arg_conf* conf);
 
 #define LOG_DEBUG(msg, ...)     log_str(DEBUG, "DEBUG", stdout, msg, ##__VA_ARGS__)
 #define LOG_INFO(msg, ...)      log_str(INFO, "INFO", stdout, msg, ##__VA_ARGS__)

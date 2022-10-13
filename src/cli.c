@@ -49,7 +49,7 @@ static int save_strtol(const char* str_to_conv, int* store_into) {
     return EXIT_FAILURE;
 }
 
-static void handle_arg_frequency(config_t* conf, long frequency) {
+static void handle_arg_frequency(arg_conf* conf, long frequency) {
     // calculate delay from hertz input
     LOG_DEBUG("Frequency [Hz] input specified: %ld.", frequency);
 
@@ -74,8 +74,8 @@ static void handle_arg_frequency(config_t* conf, long frequency) {
  *** EXPOSED METHODS                                ***
  ******************************************************/
 
-config_t* cli_config_default(void) {
-    config_t* conf = malloc(sizeof(config_t));
+arg_conf* cli_config_default(void) {
+    arg_conf* conf = malloc(sizeof(arg_conf));
 
     conf->debug = FATAL;
     conf->us_delay = 0;
@@ -84,11 +84,11 @@ config_t* cli_config_default(void) {
     return conf;
 }
 
-void cli_config_destroy(config_t *conf) {
+void cli_config_destroy(arg_conf *conf) {
     free(conf);
 }
 
-int cli_config_handle(config_t* const conf, int argc, char **argv) {
+int cli_config_handle(arg_conf* const conf, int argc, char **argv) {
     int c;
 
     if (argc < 2) {
@@ -105,7 +105,7 @@ int cli_config_handle(config_t* const conf, int argc, char **argv) {
                     return EXIT_FAILURE;
 
                 conf->debug = strtol_in;
-                log_init(conf);
+                log_set_lvl(conf);
                 break;
             case 'f':
                 if (save_strtol(optarg, &strtol_in))

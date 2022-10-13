@@ -12,7 +12,7 @@
 #include "logging.h"
 
 int main(int argc, char** argv) {
-    config_t* conf = cli_config_default();
+    arg_conf* conf = cli_config_default();
 
 	if (cli_config_handle(conf, argc, argv))
         return EXIT_FAILURE;

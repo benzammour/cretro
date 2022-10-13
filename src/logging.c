@@ -12,7 +12,7 @@
  *** LOCAL VARIABLES                                ***
  ******************************************************/
 
-static log_level_t min_dbg_lvl = FATAL;
+static log_level min_dbg_lvl = FATAL;
 
 /******************************************************
  *** LOCAL METHODS                                  ***
@@ -22,7 +22,7 @@ static log_level_t min_dbg_lvl = FATAL;
  *** EXPOSED METHODS                                ***
  ******************************************************/
 
-void log_init(const config_t* conf) {
+void log_set_lvl(const arg_conf* conf) {
     min_dbg_lvl = conf->debug;
 
     // minimum debug level cannot be higher than fatal
@@ -36,7 +36,7 @@ void log_init(const config_t* conf) {
     LOG_INFO("Log level initialized to %d.", min_dbg_lvl);
 }
 
-__attribute__((format(printf, 4, 5))) void log_str(log_level_t dbg_lvl, const char* dbg_lvl_str, FILE* stream, const char *msg, ...) {
+__attribute__((format(printf, 4, 5))) void log_str(log_level dbg_lvl, const char* dbg_lvl_str, FILE* stream, const char *msg, ...) {
     if (dbg_lvl < min_dbg_lvl) return;
 
     va_list args;
