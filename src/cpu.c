@@ -4,14 +4,14 @@
 #include "sound.h"
 #include "logging.h"
 
-#define FONTSET_SIZE 80
+#define FONTSET_SIZE		  80
 #define FONTSET_START_ADDRESS 0x00
-#define START_ADDRESS 0x200
+#define START_ADDRESS		  0x200
 
-#define GET_X(opcode) ((uint8_t) ((opcode >> 8) & 0x000F))
-#define GET_Y(opcode) ((uint8_t) ((opcode >> 4) & 0x000F))
-#define GET_N(opcode) ((uint8_t) (opcode & 0x000F))
-#define GET_KK(opcode) ((uint8_t) (opcode & 0x00FF))
+#define GET_X(opcode)	((uint8_t) ((opcode >> 8) & 0x000F))
+#define GET_Y(opcode)	((uint8_t) ((opcode >> 4) & 0x000F))
+#define GET_N(opcode)	((uint8_t) (opcode & 0x000F))
+#define GET_KK(opcode)	((uint8_t) (opcode & 0x00FF))
 #define GET_NNN(opcode) ((uint16_t) (opcode & 0x0FFF))
 
 typedef void (*op_function)(void);
@@ -24,11 +24,11 @@ static void ILLEGAL_OPCODE(void) {
 }
 #pragma GCC diagnostic pop
 
-op_function instr_lookup[0xF + 1] = { [0 ... 0xF] = ILLEGAL_OPCODE };
-op_function zero_prefixed_lookup[0xE + 1] = { [0 ... 0xE] = ILLEGAL_OPCODE };
-op_function eight_prefixed_lookup[0xE + 1] = { [0 ... 0xE] = ILLEGAL_OPCODE };
-op_function e_prefixed_lookup[0xE + 1] = { [0 ... 0xE] = ILLEGAL_OPCODE };
-op_function f_prefixed_lookup[0x65 + 1] = { [0 ... 0x65] = ILLEGAL_OPCODE };
+op_function instr_lookup[0xF + 1]		   = {[0 ... 0xF] = ILLEGAL_OPCODE};
+op_function zero_prefixed_lookup[0xE + 1]  = {[0 ... 0xE] = ILLEGAL_OPCODE};
+op_function eight_prefixed_lookup[0xE + 1] = {[0 ... 0xE] = ILLEGAL_OPCODE};
+op_function e_prefixed_lookup[0xE + 1]	   = {[0 ... 0xE] = ILLEGAL_OPCODE};
+op_function f_prefixed_lookup[0x65 + 1]	   = {[0 ... 0x65] = ILLEGAL_OPCODE};
 
 uint8_t fontset[FONTSET_SIZE] = {
 	0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -46,64 +46,65 @@ uint8_t fontset[FONTSET_SIZE] = {
 	0xF0, 0x80, 0x80, 0x80, 0xF0, // C
 	0xE0, 0x90, 0x90, 0x90, 0xE0, // D
 	0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-	0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+	0xF0, 0x80, 0xF0, 0x80, 0x80, // F
 };
 
 machine_t m = {
-	{ [0 ... (4096-1)] = 0 }, 
-	{ [0 ... (REGISTER_COUNT-1)] = 0 }, 
-	{ [0 ... (STACK_LEVELS-1)] = 0 }, 
-	{ [0 ... (SCREEN_DIMENSIONS-1)] = 0 }, 
-	{ [0 ... (KEY_SIZE-1)] = 0 }, 
-	0, 
+	{[0 ...(4096 - 1)] = 0},
+	{[0 ...(REGISTER_COUNT - 1)] = 0},
+	{[0 ...(STACK_LEVELS - 1)] = 0},
+	{[0 ...(SCREEN_DIMENSIONS - 1)] = 0},
+	{[0 ...(KEY_SIZE - 1)] = 0},
 	0,
 	0,
 	0,
 	0,
 	0,
 	0,
-	0
+	0,
+	0,
 };
 
-void rom_load(const char *filename) {
-    FILE *f;
+void rom_load(char const *filename) {
+	FILE *f;
 	long romSize;
 
 	// Open ROM
-    LOG_INFO("Loading ROM %s", filename);
-    f = fopen(filename, "r");
+	LOG_INFO("Loading ROM %s", filename);
+	f = fopen(filename, "r");
 	if (f == NULL) {
-        LOG_FATAL("%s", strerror(errno));
-        return;
+		LOG_FATAL("%s", strerror(errno));
+		return;
 	}
 
 	// Get the number of bytes
 	fseek(f, 0L, SEEK_END);
 	romSize = ftell(f);
 
-    LOG_DEBUG("Size of ROM: %ld", romSize);
+	LOG_DEBUG("Size of ROM: %ld", romSize);
 
-    if (romSize < 0) {
-        LOG_FATAL("%s", strerror(errno));
-        fclose(f);
-        return;
-    } else if (((unsigned long) romSize) >= UINT16_MAX) {
-        LOG_FATAL("Size of rom %s (%ld) is larger than maximal allowed size %d", filename, romSize, UINT16_MAX);
-        fclose(f);
-        return;
-    }
+	if (romSize < 0) {
+		LOG_FATAL("%s", strerror(errno));
+		fclose(f);
+		return;
+	} else if (((unsigned long) romSize) >= UINT16_MAX) {
+		LOG_FATAL("Size of rom %s (%ld) is larger than maximal allowed size %d", filename, romSize,
+				  UINT16_MAX);
+		fclose(f);
+		return;
+	}
 
 	// reset pointer to beginning of file
 	fseek(f, 0L, SEEK_SET);
 
 	size_t bytesRead = fread(&m.memory[START_ADDRESS], sizeof(uint8_t), (size_t) romSize, f);
-    if (bytesRead != (size_t) romSize) {
-        LOG_FATAL("An error occurred while reading bytes from rom");
-        fclose(f);
-        return;
-    }
+	if (bytesRead != (size_t) romSize) {
+		LOG_FATAL("An error occurred while reading bytes from rom");
+		fclose(f);
+		return;
+	}
 
-    LOG_DEBUG("Successfully read %ld B of ROM", romSize);
+	LOG_DEBUG("Successfully read %ld B of ROM", romSize);
 	fclose(f);
 }
 
@@ -128,8 +129,8 @@ void machine_init(void) {
 
 	m.PC = START_ADDRESS;
 	srand((unsigned int) time(NULL));
-	
-    memcpy(&m.memory[FONTSET_START_ADDRESS], fontset, FONTSET_SIZE);
+
+	memcpy(&m.memory[FONTSET_START_ADDRESS], fontset, FONTSET_SIZE);
 
 	// Set up lookup table
 	instr_lookup[0x0] = ZERO_PREFIXED;
@@ -182,7 +183,7 @@ void cpu_step(void) {
 
 	m.PC += 2;
 
-	// Get and Execute Instruction 
+	// Get and Execute Instruction
 	(*(instr_lookup[(m.opcode & 0xF000) >> 12]))();
 }
 
@@ -210,7 +211,7 @@ void OPC_2nnn(void) {
 }
 
 void OPC_3xkk(void) {
-	uint8_t Vx = GET_X(m.opcode);
+	uint8_t Vx	 = GET_X(m.opcode);
 	uint8_t byte = GET_KK(m.opcode);
 
 	if (m.registers[Vx] == byte) {
@@ -219,7 +220,7 @@ void OPC_3xkk(void) {
 }
 
 void OPC_4xkk(void) {
-	uint8_t Vx = GET_X(m.opcode);
+	uint8_t Vx	 = GET_X(m.opcode);
 	uint8_t byte = GET_KK(m.opcode);
 
 	if (m.registers[Vx] != byte) {
@@ -237,14 +238,14 @@ void OPC_5xy0(void) {
 }
 
 void OPC_6xkk(void) {
-	uint8_t Vx = GET_X(m.opcode);
+	uint8_t Vx	 = GET_X(m.opcode);
 	uint8_t byte = GET_KK(m.opcode);
 
 	m.registers[Vx] = byte;
 }
 
 void OPC_7xkk(void) {
-	uint8_t Vx = GET_X(m.opcode);
+	uint8_t Vx	 = GET_X(m.opcode);
 	uint8_t byte = GET_KK(m.opcode);
 
 	m.registers[Vx] += byte;
@@ -343,22 +344,22 @@ void OPC_Annn(void) {
 
 void OPC_Bnnn(void) {
 	uint16_t reg_addr = GET_NNN(m.opcode);
-	uint8_t offset = m.registers[0];
-	
+	uint8_t offset	  = m.registers[0];
+
 	m.PC = reg_addr + offset;
 }
 
 void OPC_Cxkk(void) {
-	uint8_t Vx = GET_X(m.opcode);
-	uint8_t byte = GET_KK(m.opcode);
+	uint8_t Vx	   = GET_X(m.opcode);
+	uint8_t byte   = GET_KK(m.opcode);
 	uint8_t random = (uint8_t) (rand() & byte);
-	
+
 	m.registers[Vx] = random & byte;
 }
 
 void OPC_Dxyn(void) {
-	uint_fast8_t Vx = (m.opcode & 0x0F00u) >> 8u;
-	uint_fast8_t Vy = (m.opcode & 0x00F0u) >> 4u;
+	uint_fast8_t Vx		= (m.opcode & 0x0F00u) >> 8u;
+	uint_fast8_t Vy		= (m.opcode & 0x00F0u) >> 4u;
 	uint_fast8_t height = m.opcode & 0x000Fu;
 
 	// Wrap if going beyond screen boundaries
@@ -372,11 +373,11 @@ void OPC_Dxyn(void) {
 
 		for (uint_fast8_t col = 0; col < 8; ++col) {
 			uint_fast8_t bit = spritePixel & (0b10000000 >> col);
-			uint32_t* pixel = &m.video[(vyValue + row) * VIDEO_WIDTH + (vxValue + col)];
+			uint32_t *pixel	 = &m.video[(vyValue + row) * VIDEO_WIDTH + (vxValue + col)];
 
 			// Sprite pixel is set
 			if (bit) {
-				if (*pixel == 0xFFFFFFFF) {	// pixel on screen => set carry/collision bit
+				if (*pixel == 0xFFFFFFFF) { // pixel on screen => set carry/collision bit
 					m.registers[0xF] = 1;
 				}
 
@@ -387,7 +388,7 @@ void OPC_Dxyn(void) {
 }
 
 void OPC_Ex9E(void) {
-	uint8_t Vx = GET_X(m.opcode);
+	uint8_t Vx	= GET_X(m.opcode);
 	uint8_t key = m.registers[Vx];
 
 	if (m.keys[key]) {
@@ -396,7 +397,7 @@ void OPC_Ex9E(void) {
 }
 
 void OPC_ExA1(void) {
-	uint8_t Vx = GET_X(m.opcode);
+	uint8_t Vx	= GET_X(m.opcode);
 	uint8_t key = m.registers[Vx];
 
 	if (!m.keys[key]) {
@@ -405,7 +406,7 @@ void OPC_ExA1(void) {
 }
 
 void OPC_Fx07(void) {
-	uint8_t Vx = GET_X(m.opcode);
+	uint8_t Vx		= GET_X(m.opcode);
 	m.registers[Vx] = m.delay_timer;
 }
 
@@ -441,14 +442,14 @@ void OPC_Fx1E(void) {
 }
 
 void OPC_Fx29(void) {
-	uint8_t Vx = GET_X(m.opcode);
+	uint8_t Vx	  = GET_X(m.opcode);
 	uint8_t value = m.registers[Vx];
 
 	m.index = FONTSET_START_ADDRESS + (5 * value); // 5 = font char width
 }
 
 void OPC_Fx33(void) {
-	uint8_t Vx = GET_X(m.opcode);
+	uint8_t Vx	  = GET_X(m.opcode);
 	uint8_t value = m.registers[Vx];
 
 	// 1s
@@ -466,11 +467,11 @@ void OPC_Fx33(void) {
 void OPC_Fx55(void) {
 	uint8_t Vx = GET_X(m.opcode);
 
-    memcpy(&m.memory[m.index], m.registers, Vx + 1);
+	memcpy(&m.memory[m.index], m.registers, Vx + 1);
 }
 
 void OPC_Fx65(void) {
 	uint8_t Vx = GET_X(m.opcode);
 
-    memcpy(m.registers, &m.memory[m.index], Vx + 1);
+	memcpy(m.registers, &m.memory[m.index], Vx + 1);
 }
