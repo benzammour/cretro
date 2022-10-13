@@ -53,6 +53,7 @@ remove: clean
 .PHONY: install
 install: $(BINDIR)/$(TARGET)
 	@sudo cp $(BINDIR)/$(TARGET) $(INSTALL_PATH)
+	@echo "Installed to "$(INSTALL_PATH)
 
 .PHONY: uninstall
 uninstall:
