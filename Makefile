@@ -20,7 +20,7 @@ SRCDIR	= src
 OBJDIR	= obj
 BINDIR	= .
 
-INSTALL_PATH = /usr/bin/$(TARGET)
+INSTALL_PATH = ~/.local/bin/$(TARGET)
 
 SOURCES		:= $(wildcard $(SRCDIR)/*.c)
 INCLUDES	:= $(wildcard $(SRCDIR)/*.h)
@@ -52,10 +52,10 @@ remove: clean
 
 .PHONY: install
 install: $(BINDIR)/$(TARGET)
-	@sudo cp $(BINDIR)/$(TARGET) $(INSTALL_PATH)
+	@cp $(BINDIR)/$(TARGET) $(INSTALL_PATH)
 	@echo "Installed to "$(INSTALL_PATH)
 
 .PHONY: uninstall
 uninstall:
-	@if [[ -f $(INSTALL_PATH) ]]; then sudo rm $(INSTALL_PATH); echo "Removed binary "$(INSTALL_PATH)"!"; else echo "Nothing to uninstall!"; fi
+	@if [[ -f $(INSTALL_PATH) ]]; then rm $(INSTALL_PATH); echo "Removed binary "$(INSTALL_PATH)"!"; else echo "Nothing to uninstall!"; fi
 
