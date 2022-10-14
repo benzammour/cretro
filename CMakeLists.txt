@@ -63,7 +63,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "Clan
     message("[${MSG_PREFIX}] Using clang")
     add_compile_options(
         -Weverything
-        -Wno-unknown-warning-option
         -Wno-format-nonliteral
         -ferror-limit=0
     )
