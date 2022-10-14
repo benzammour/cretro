@@ -66,3 +66,6 @@ roms/*
 # Misc
 compile_commands.json
 .cache/
+
+# Cmake
+build/

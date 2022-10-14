@@ -52,20 +52,28 @@ $ sudo apt install -y build-essential libsdl2-dev make
    ```
 2. Build the Project
    ```bash
-   make
+   mkdir build
+   cd build
+   cmake -G Ninja ..
+   ninja
    ```
+3. Optionally, you can install the resulting binary using
+   ```
+   ninja install-bin
+   ```
+   It can be removed using `ninja uninstall-bin`.
 
 ## Usage
 
 To run a ROM, pass the path into `cretro`, right after your configured clock-delay (in milliseconds):
 
 ```bash
-   ./cretro <DELAY> <PATH>
+   ./cretro [-d <0..4>] [-f <FREQUENCY>] <ROM>
 ```
 
 An example would be 
 ```bash
-   ./cretro 0 roms/bat.ch8
+   ./cretro roms/bat.ch8
 ```
 To initially test the emulator, I created the [bat.ch8](https://github.com/Benzammour/cretro/blob/main/roms/bat.ch8) ROM for you:
 [![Bat Demo][bat-demo]](https://github.com/Benzammour/cretro/blob/main/.github/images/bat.png)
