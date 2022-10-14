@@ -103,6 +103,7 @@ add_executable(
     ${SOURCE_FILES}
 )
 set_property(TARGET ${TARGET_NAME} PROPERTY C_STANDARD 17)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
 target_link_libraries(${PRODUCT_NAME} PUBLIC -lm -lSDL2 -pthread)
 
