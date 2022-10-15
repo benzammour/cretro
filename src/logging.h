@@ -5,7 +5,13 @@
 
 #include "cli.h"
 
-typedef enum log_level { DEBUG, INFO, WARNING, ERROR, FATAL } log_level;
+typedef enum log_level {
+	DEBUG,
+	INFO,
+	WARNING,
+	ERROR,
+	FATAL
+} log_level;
 
 void log_str(log_level dbg_lvl, char const *dbg_lvl_str, FILE *stream, char const *msg, ...);
 
